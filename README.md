@@ -1,1 +1,1 @@
-# Using functional Data for landslide prediction
+# Using functional data for landslide prediction
