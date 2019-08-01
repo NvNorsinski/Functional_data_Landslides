@@ -15,10 +15,10 @@ name = "slope_1m"
 # set path to qgis installation
 set_env("C:/Program Files/QGIS 2.18")
 
-# define size of moving windows for box filtering
-seq_radius = seq(from = 1, to = 2, by = 1)
+# define size of moving windows for filtering
+seq_radius = seq(from = 1, to = 15, by = 1)
 seq_radius2 = seq(from = 20, to = 50, by= 5)
-append(seq_radius, seq_radius2)
+seq_radius = append(seq_radius, seq_radius2)
 
 
 get_usage(alg = "grass7:r.resamp.filter")
