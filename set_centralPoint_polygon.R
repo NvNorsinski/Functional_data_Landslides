@@ -6,12 +6,10 @@ library(RQGIS)
 set_env("C:/Program Files/QGIS 2.18")
 
 # define input polygon
-p_in = "Daten/Paldau/Landslides/Landslides_source.shp"
-path_to_shape = normalizePath(path = p_in, winslash = "\\", mustWork = NA)
+path_to_shape = "Daten/Paldau/Landslides/Landslides_source.shp"
 
 # define output path
-p_out = "Daten/Paldau/Landslides/"
-path_to_out = normalizePath(path = p_out, winslash = "\\", mustWork = NA)
+path_to_out = "Daten/Paldau/Landslides/"
 
 # define output name
 name = "Paldau_source_point"

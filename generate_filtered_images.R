@@ -6,12 +6,11 @@ library(RQGIS)
 set_env("C:/Program Files/QGIS 2.18")
 
 # define input image
-p_in = "Daten/Paldau/Parameters/dgm_1m_AOI.tif"
-path_to_image = normalizePath(path = p_in, winslash = "\\", mustWork = NA)
+path_to_image = "Daten/Paldau/Parameters/dgm_1m_AOI.tif"
 
 # define output image path
-p_out = "Daten/Paldau/Parameters/Filtered_images_dgm/"
-path_to_out = normalizePath(path = p_out, winslash = "\\", mustWork = NA)
+path_to_out = "Daten/Paldau/Parameters/Filtered_images_dgm/"
+
 
 # define output image name
 name = "dgm_1m_AOI"
