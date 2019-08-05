@@ -5,7 +5,7 @@ library(sf)
 
 # input points
 
-path_to_points ="Daten/Paldau/Landslides/Paldau_source_point.shp"
+path_to_points = "Daten/Paldau/Landslides/Paldau_source_point.shp"
 points = sf::st_read(path_to_points)
 
 # input folder of filtered images
@@ -25,10 +25,10 @@ rasValue = extract(rasStack, points)
 rasValue
 
 # write to csv
-# combinePointValue=cbind(points,rasValue)
-# write.table(combinePointValue, file = paste0(path_to_out, name,".csv"), append=FALSE,
-#             sep= ",", row.names = FALSE, col.names=TRUE)
+ combinePointValue=cbind(points,rasValue)
+ write.table(combinePointValue, file = paste0(path_to_out, name,".csv"),
+             append = FALSE, sep= ",", row.names = FALSE, col.names = TRUE)
 
 # save as R object
-saveRDS(combinePointValue, paste0(path_to_out,name,".rds"))
+saveRDS(combinePointValue, paste0(path_to_out, name,".rds"))
 
