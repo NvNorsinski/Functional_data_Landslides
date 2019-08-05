@@ -6,14 +6,14 @@ library(RQGIS)
 set_env("C:/Program Files/QGIS 2.18")
 
 # define input image
-path_to_image = "Daten/Paldau/Parameters/dgm_1m_AOI.tif"
+path_to_image = "Daten/Paldau/Parameters/slope_1m.tif"
 
 # define output image path
-path_to_out = "Daten/Paldau/Parameters/Filtered_images_dgm/"
+path_to_out = "Daten/Paldau/Parameters/Filtered_images_slope/"
 
 
 # define output image name
-name = "dgm_1m_AOI"
+name = "slope_1m"
 
 
 # define sizes of moving windows for filtering
@@ -28,10 +28,12 @@ params
 params$input = path_to_image
 params$filter = "box"
 
-
+count = 0
 for(i in seq_radius){
+
   params$radius = i
-  params$output = paste0(path_to_out, name, i)
+  params$output = paste0(path_to_out, name,"_", 100 + count)
   out = run_qgis(alg = "grass7:r.resamp.filter",
                  params = params)
+  count = count + 1
 }
