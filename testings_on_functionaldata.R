@@ -13,7 +13,7 @@ dgm_dat = readRDS(file = "Daten/Paldau/Parameters/filtered_dgm_pointVal.rds")
 
 
 # remove spatial data
-dgm_dat1 = sf::st_drop_geometry(dgm_dat)
+dgm_dat1 = st_drop_geometry(dgm_dat)
 # and remove id colum
 dgm_dat1 = dgm_dat1[c(-1)]
 dgm_dat1 = t(as.matrix(dgm_dat1))
@@ -79,6 +79,8 @@ tempfd1 = smooth.basis(length_vec, slope_dat1, basisobj2)$fd
 tempfd1$fdnames = fdnames1
 
 plot(tempfd1)
+
+fRegress = fRegress()
 
 #------
 lambda = 0.01

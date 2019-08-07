@@ -6,7 +6,7 @@ library(sf)
 # input points
 
 path_to_points = "Daten/Paldau/Landslides/Paldau_source_point.shp"
-points = sf::st_read(path_to_points)
+points = st_read(path_to_points)
 
 # input folder of filtered images
 path_to_images = "Daten/Paldau/Parameters/filtered_images_slope"
