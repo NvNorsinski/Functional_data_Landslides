@@ -6,14 +6,14 @@ library(RQGIS)
 set_env("C:/Program Files/QGIS 2.18")
 
 # define input image
-path_to_image = "Daten/Paldau/Parameters/slope_1m.tif"
+path_to_image = "Daten/Paldau/Parameters/TWI.tif"
 
 # define output image path
-path_to_out = "Daten/Paldau/Parameters/Filtered_images_slope/"
+path_to_out = "Daten/Paldau/Parameters/Filtered_images_twi/"
 
 
 # define output image name
-name = "slope_1m"
+name = "twi"
 
 
 # define sizes of moving windows for filtering

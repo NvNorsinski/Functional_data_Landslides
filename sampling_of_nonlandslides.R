@@ -7,14 +7,14 @@ library(rgeos)
 library(dismo)
 
 # input path
-path_to_images = "Daten/Paldau/Parameters/filtered_images_dgm"
+path_to_images = "Daten/Paldau/Parameters/filtered_images_planCurvature"
 path_to_giant = "Daten/Paldau/Landslides/Giant_Paldau.shp"
 path_to_minor = "Daten/Paldau/Landslides/Landslides_Paldau_02_18.shp"
 
 # ouput path
-path_to_out = "Daten/Paldau/Parameters"
+path_to_out = "Daten/Paldau/Samples"
 name_mask = "maskPaldau"
-name_random_values = "rnd_no_lsd_Paldau"
+name_random_values = "rnd_no_lsd_Paldau_planCurv"
 
 # read images
 giant = st_read(path_to_giant)
@@ -27,6 +27,7 @@ lanslde_poly = gUnion(giant, minor)
 
 # create raster stack
 fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE)
+fs
 rasStack = stack(fs)
 
 # create mask image
@@ -35,10 +36,12 @@ r = raster(ncol= dim[2], nrow=dim[1])
 extent(r) = extent(rasStack)
 r
 mask = rasterize(lanslde_poly, r)
+
 # change value where is no polygon to 2
 mask[is.na(mask[])] = 2
 # change values where a polygon is to NA
 mask[mask == 1] = NA
+plot(mask)
 # change twos to ones. In fact this is not necessary
 mask[mask == 2] = 1
 
@@ -72,17 +75,17 @@ rasStack = stack(fs)
 # it is faster and takes in to account that the cell size is different,
 # depending on distance to equator. So it is preferable
 
-start_time = Sys.time()
+#start_time = Sys.time()
 
-rnd_poi = as.data.frame(randomPoints(mask = rasStack, n = 200))
+rnd_poi = as.data.frame(randomPoints(mask = rasStack, n = 10000))
 rnd_poi
 ext = extract(rasStack, rnd_poi)
 ext
 
-end_time = Sys.time()
+#end_time = Sys.time()
 
-time = end_time - start_time
-time
+#time = end_time - start_time
+#time
 # 10 000 samples ~ 30 minutes
 
 samples_df = as.data.frame(t(ext))
