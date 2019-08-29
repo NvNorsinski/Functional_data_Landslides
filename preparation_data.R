@@ -12,7 +12,7 @@ slope_landsld = readRDS(file = "Daten/Paldau/Samples/filtered_twi_pointVal.rds")
 slope_no_landsld = readRDS(file = "Daten/Paldau/Samples/rnd_no_lsd_Paldau_twi.rds")
 
 # output path
-predict_path = "Daten/Paldau/Samples/predict.rds"
+responset_path = "Daten/Paldau/Samples/response.rds"
 variable_path = "Daten/Paldau/Samples/twi.rds"
 
 # data wrangling section--------------------------------------------------------
@@ -54,26 +54,26 @@ formating = function(lsd_data, no_lsd_data){
   no_lsd_data = t(no_lsd_data)
   dat = cbind(lsd_data, no_lsd_data)
 
-  # create predict variable-------------------------------------------------------
+  # create response variable-------------------------------------------------------
 
-  predic_yes = ncol(lsd_data)
-  predic_no = ncol(no_lsd_data)
+  response_yes = ncol(lsd_data)
+  response_no = ncol(no_lsd_data)
 
-  predict_var = c(rep(1, predic_yes), rep(0, predic_no))
-  posseq =  seq(from = 1, to =  predic_no + predic_yes)
+  responset_var = c(rep(1, response_yes), rep(0, response_no))
+  posseq =  seq(from = 1, to =  response_no + response_yes)
   names = paste0("pos: " , posseq)
-  names(predict_var) = c(names)
+  names(responset_var) = c(names)
 
   out = list()
-  out$predict = predict_var
+  out$responset = responset_var
   out$dat = dat
 
   return(out)
 }
 
 dgm_dat = formating(slope_landsld, slope_no_landsld)
-predict = dgm_dat$predict
+responset = dgm_dat$responset
 dat = dgm_dat$dat
 
-#saveRDS(predict, predict_path)
+#saveRDS(responset, responset_path)
 saveRDS(dat, variable_path)

@@ -7,14 +7,14 @@ library(rgeos)
 library(dismo)
 
 # input path
-path_to_images = "Daten/Paldau/Parameters/filtered_images_twi"
+path_to_images = "Daten/Paldau/Parameters/Filtered_images_dgm"
 path_to_giant = "Daten/Paldau/Landslides/Giant_Paldau.shp"
 path_to_minor = "Daten/Paldau/Landslides/Landslides_Paldau_02_18.shp"
 
 # ouput path
 path_to_out = "Daten/Paldau/Samples"
 name_mask = "maskPaldau"
-name_random_values = "rnd_no_lsd_Paldau_twi"
+name_random_values = "rnd_no_lsd_Paldau_normalizedHeight"
 
 # read images
 giant = st_read(path_to_giant)

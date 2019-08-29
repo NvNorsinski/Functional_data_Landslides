@@ -6,14 +6,14 @@ library(RQGIS)
 set_env("C:/Program Files/QGIS 2.18")
 
 # define input image
-path_to_image = "Daten/Paldau/Parameters/TWI.tif"
+path_to_image = "Daten/Paldau/Parameters/aspect.tif"
 
 # define output image path
-path_to_out = "Daten/Paldau/Parameters/Filtered_images_twi/"
+path_to_out = "Daten/Paldau/Parameters/Filtered_images_aspect/"
 
 
 # define output image name
-name = "twi"
+name = "aspect"
 
 
 # define sizes of moving windows for filtering
