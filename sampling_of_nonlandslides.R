@@ -4,17 +4,18 @@ library(raster)
 library(sf)
 library(sp)
 library(rgeos)
-library(dismo)
+#library(dismo)
 
 # input path
-path_to_images = "Daten/Paldau/Parameters/Filtered_images_dgm"
+path_to_images = "Daten/Paldau/Parameters/Filtered_images_twi"
 path_to_giant = "Daten/Paldau/Landslides/Giant_Paldau.shp"
 path_to_minor = "Daten/Paldau/Landslides/Landslides_Paldau_02_18.shp"
+path_rnd_poi = "Daten/Paldau/Samples/randomPoints.rds"
 
 # ouput path
 path_to_out = "Daten/Paldau/Samples"
 name_mask = "maskPaldau"
-name_random_values = "rnd_no_lsd_Paldau_normalizedHeight"
+name_random_values = "rnd_no_lsd_Paldau_twi"
 
 # read images
 giant = st_read(path_to_giant)
@@ -55,12 +56,13 @@ writeRaster(mask, filename=file.path(path_to_out, name_mask),
             format = "GTiff", overwrite = TRUE)
 
 # same random points for all samplings
-rnd_poi = as.data.frame(randomPoints(mask = rasStack, n = 400))
-rnd_poi
+#rnd_poi = as.data.frame(randomPoints(mask = rasStack, n = 400))
+#rnd_poi
 
-saveRDS(rnd_poi, "Daten/Paldau/Samples/randomPoints.rds")
+# saveRDS(rnd_poi, "Daten/Paldau/Samples/randomPoints.rds")
 
 # end of region not to run------------------------------------------------------
+rnd_poi = readRDS(path_rnd_poi)
 
 # create new raster Stack, with mask image as first image
 fs = c(paste0(path_to_out,"/", name_mask,".tif"), fs)

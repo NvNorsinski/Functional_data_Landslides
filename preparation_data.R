@@ -6,14 +6,18 @@ library(sf)
 # rechange numbering of colums
 
 # read in data
-slope_landsld = readRDS(file = "Daten/Paldau/Samples/filtered_twi_pointVal.rds")
+yes_landsld = readRDS(file = "Daten/Paldau/Samples/filtered_dgm_pointVal.rds")
+no_landsld = readRDS(file = "Daten/Paldau/Samples/rnd_no_lsd_Paldau_dgm.rds")
 
+geology_landsld = readRDS(file = "Daten/Paldau/Samples/geology_pointVal.rds")
+geology_no_landsld = readRDS(file = "Daten/Paldau/Samples/geology_nolsd_pointVal.rds")
 
-slope_no_landsld = readRDS(file = "Daten/Paldau/Samples/rnd_no_lsd_Paldau_twi.rds")
 
 # output path
 responset_path = "Daten/Paldau/Samples/response.rds"
-variable_path = "Daten/Paldau/Samples/twi.rds"
+variable_path = "Daten/Paldau/Samples/dgm.rds"
+
+geology_path = "Daten/Paldau/Samples/geology.rds"
 
 # data wrangling section--------------------------------------------------------
 seq_radius = seq(from = 1, to = 15, by = 1)
@@ -54,7 +58,7 @@ formating = function(lsd_data, no_lsd_data){
   no_lsd_data = t(no_lsd_data)
   dat = cbind(lsd_data, no_lsd_data)
 
-  # create response variable-------------------------------------------------------
+  # create response variable----------------------------------------------------
 
   response_yes = ncol(lsd_data)
   response_no = ncol(no_lsd_data)
@@ -71,9 +75,23 @@ formating = function(lsd_data, no_lsd_data){
   return(out)
 }
 
-dgm_dat = formating(slope_landsld, slope_no_landsld)
+dgm_dat = formating(yes_landsld, no_landsld)
 responset = dgm_dat$responset
 dat = dgm_dat$dat
 
-#saveRDS(responset, responset_path)
+saveRDS(responset, responset_path)
 saveRDS(dat, variable_path)
+
+# prepare geology data----------------------------------------------------------
+st_geometry(geology_landsld) = NULL
+
+geology_landsld = geology_landsld[c(3)]
+names(geology_landsld) = "Gridcode"
+geology_no_landsld = geology_no_landsld[c(2)]
+names(geology_no_landsld) = "Gridcode"
+
+geology = rbind(geology_landsld, geology_no_landsld)
+
+saveRDS(geology, geology_path)
+
+
