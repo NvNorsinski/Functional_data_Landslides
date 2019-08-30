@@ -7,7 +7,7 @@ library(dplyr)
 
 # input points
 
-path_to_points = "Daten/Paldau/Landslides/Paldau_source_point.shp"
+path_to_points = "Daten/Paldau/Landslides/Cliped_landslide_points.shp"
 # areas of landslides are masked out with value 0 in raster
 path_masked_geology = "Daten/Paldau/Geology/Geologie_GIS_Paldau_raster_masked.tif"
 # points wher landsliedes are

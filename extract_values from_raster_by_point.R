@@ -5,14 +5,14 @@ library(sf)
 
 # input points
 
-path_to_points = "Daten/Paldau/Landslides/Paldau_source_point.shp"
+path_to_points = "Daten/Paldau/Landslides/Cliped_landslide_points.shp"
 points = st_read(path_to_points)
 
 # input folder of filtered images
-path_to_images = "Daten/Paldau/Parameters/filtered_images_catchmant_area"
+path_to_images = "Daten/Paldau/Parameters/filtered_images_twi"
 
 # output folder
-name = "filtered_catchmantArea_pointVal"
+name = "filtered_twi_pointVal"
 path_to_out = "Daten/Paldau/Samples/"
 
 # list of all images in folder
@@ -26,9 +26,6 @@ rasValue
 
 combinePointValue = cbind(points, rasValue)
 
-# write to csv
- #write.table(combinePointValue, file = paste0(path_to_out, name,".csv"),
- #            append = FALSE, sep= ",", row.names = FALSE, col.names = TRUE)
 
 # save as R object
 saveRDS(combinePointValue, paste0(path_to_out, name,".rds"))
