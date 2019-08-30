@@ -131,7 +131,9 @@ names(geology_no_landsld) = "Gridcode"
 
 geology = rbind(geology_landsld, geology_no_landsld)
 
-sum(is.na(geology_landsld))
+names(geology) = "geology"
+
+geology$geology = factor(geology$geology)
 
 saveRDS(geology, geology_path)
 
