@@ -6,13 +6,13 @@ library(sf)
 # rechange numbering of colums
 
 
-yes_lsd = c("filtered_aspect_pointVal", "filtered_aspect_sincos_pointVal",
+yes_lsd = c("filtered_aspectns_pointVal", "filtered_aspectow_pointVal",
             "filtered_catchmantArea_pointVal", "filtered_dgm_pointVal",
             "filtered_genCurvature_pointVal", "filtered_planCurvature_pointVal",
             "filtered_slope_pointVal", "filtered_tpi_pointVal",
             "filtered_twi_pointVal")
 
-no_lsd = c("rnd_no_lsd_Paldau_aspect", "rnd_no_lsd_Paldau_aspect_sincos",
+no_lsd = c("rnd_no_lsd_Paldau_aspect_ns", "rnd_no_lsd_Paldau_aspect_ow",
               "rnd_no_lsd_Paldau_catchmant_area", "rnd_no_lsd_Paldau_dgm",
               "rnd_no_lsd_Paldau_generalCurvature",
               "rnd_no_lsd_Paldau_planCurvature", "rnd_no_lsd_Paldau_slope",
@@ -31,14 +31,13 @@ geology_no_landsld = readRDS(file = "Daten/Paldau/Samples/geology_nolsd_pointVal
 responset_path = "Daten/Paldau/Samples/response.rds"
 variable_path = "Daten/Paldau/Samples/"
 
-out = c("aspect.rds", "aspect_sincos.rds", "catchmantArea.rds", "dgm.rds",
+out = c("aspect_ns.rds", "aspect_ow.rds", "catchmantArea.rds", "dgm.rds",
         "genCurvature.rds", "planCurvature.rds", "slope.rds", "tpi.rds",
         "twi.rds")
 
 geology_path = "Daten/Paldau/Samples/geology.rds"
 
 # data wrangling section--------------------------------------------------------
-
 
 # renaming function for rows and colums
 renam_rs_lsc = function(data, seq_radius, naming_offset = 0){
@@ -47,8 +46,8 @@ renam_rs_lsc = function(data, seq_radius, naming_offset = 0){
   cols = ncol(data)
   name = rep("pos: ", rows)
   ns = paste0(name, posseq + naming_offset)
-  #colnames(data) = seq_radius
-  colnames(data) = seq(from = 1, to = cols, by = 1)
+  colnames(data) = seq_radius
+  #colnames(data) = seq(from = 1, to = cols, by = 1)
   rownames(data) = ns
   return(data)
 }
@@ -111,7 +110,7 @@ for(i in 1:length(yes_lsd)){
 }
 
 #-------------------------------------------------------------------------------
-
+# preparation response
 
 
 dgm_dat = formating(yes_landsld, no_landsld)

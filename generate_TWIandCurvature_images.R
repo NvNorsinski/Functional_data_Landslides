@@ -21,31 +21,37 @@ plan_curvature = "Daten/Paldau/Parameters/Filtered_images_planCurvature/"
 
 catchmant_area = "Daten/Paldau/Parameters/Filtered_images_catchmant_area/"
 twi_image = "Daten/Paldau/Parameters/Filtered_images_twi/"
-tpi = "Daten/Paldau/Parameters/Filtered_images_tpi"
-aspect_sincos = "Daten/Paldau/Parameters/Filtered_images_aspectsincos"
-normalized_height = "Daten/Paldau/Parameters/Filtered_images_normalizedHeight"
+tpi = "Daten/Paldau/Parameters/Filtered_images_tpi/"
+aspect_ns = "Daten/Paldau/Parameters/Filtered_images_aspect_ns/"
+aspect_ow = "Daten/Paldau/Parameters/Filtered_images_aspect_ow/"
+normalized_height = "Daten/Paldau/Parameters/Filtered_images_normalizedHeight/"
 
 
 # calculate slope, aspect and curvature
-get_usage(alg = "saga:slopeaspectcurvature")
+#get_usage(alg = "saga:slopeaspectcurvature")
 
-params = get_args_man(alg = "saga:slopeaspectcurvature")
+get_usage(alg = "grass7:r.slope.aspect")
+
+#params = get_args_man(alg = "saga:slopeaspectcurvature")
+
+params = get_args_man(alg = "grass7:r.slope.aspect")
+
 params
+
+
 
 fs = list.files(path = path_to_dgm, pattern = "tif$", full.names = TRUE)
 fs
 
 count = 0
+
 for (i in fs){
-  params$ELEVATION = i
-  params$SLOPE = paste0(slope ,"slope_", 100 + count)
-  params$ASPECT = paste0(aspect,"aspect_", 100 + count)
-  params$C_GENE = paste0(general_curvature,"generalCurvature_", 100 + count)
-  params$C_PLAN = paste0(plan_curvature,"planCurvature_", 100 + count)
-  params$METHOD = 6
-  params$UNIT_SLOPE = 1
-  params$UNIT_ASPECT = 1
-  run_qgis(alg = "saga:slopeaspectcurvature", params = params)
+  params$elevation = i
+  params$format = "degrees"
+
+  params$dx = paste0(aspect_ow, "aspect_ow_", 100 + count)
+  params$dy = paste0(aspect_ns, "aspect_ns_", 100 + count)
+  run_qgis(alg = "grass7:r.slope.aspect", params = params)
   count = count + 1
 }
 

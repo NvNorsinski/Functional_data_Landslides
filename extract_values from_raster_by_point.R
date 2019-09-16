@@ -9,10 +9,10 @@ path_to_points = "Daten/Paldau/Landslides/Cliped_landslide_points.shp"
 points = st_read(path_to_points)
 
 # input folder of filtered images
-path_to_images = "Daten/Paldau/Parameters/filtered_images_twi"
+path_to_images = "Daten/Paldau/Parameters/filtered_images_aspect_ow"
 
 # output folder
-name = "filtered_twi_pointVal"
+name = "filtered_aspectow_pointVal"
 path_to_out = "Daten/Paldau/Samples/"
 
 # list of all images in folder
