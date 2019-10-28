@@ -109,6 +109,11 @@ for(i in 1:length(yes_lsd)){
   saveRDS(dat, paste0(variable_path, out[i]))
 }
 
+# logathim for catchmant area
+catchmant_area = readRDS(file = "Daten/Paldau/Samples/catchmantArea.rds")
+catchmant_area_log = log10(catchmant_area)
+saveRDS(catchmant_area_log, "Daten/Paldau/Samples/catchmantArea.rds")
+
 #-------------------------------------------------------------------------------
 # preparation response
 
