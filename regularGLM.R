@@ -2,6 +2,8 @@ rm(list = ls(all = TRUE))
 
 # read data
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
+#response = as.factor(response)
+
 
 slope = readRDS(file = "Daten/Paldau/Samples/slope.rds")
 slope = t(slope)
@@ -51,6 +53,12 @@ nam = rep(list_nam, each = leng_list)
 nam = paste0(nam,": ", tvec)
 dat = cbind(slope, aspect_ns, aspect_ow, genCurvature, catchmant_area, tpi, twi)
 colnames(dat) = nam
+dat = as.data.frame(dat)
+
+dat = cbind(response, dat)
+response = as.factor(dat$response)
+
+colnames(dat) <- make.names(colnames(dat),unique = TRUE)
 
 
 response_rep = rep(response, number_variables)
@@ -161,15 +169,31 @@ text
 
 
 library(mlr)
-makeRegrTask()
+
+#task = makeRegrTask(id = "logi", data = dat, target = "response")
+dat$response = as.factor(dat$response)
 
 
+task = makeClassifTask(id = "logi", data = dat, target = "response")
+
+# regr.glm mit family binomial geht nicht
+regr.lrn = makeLearner("classif.logreg")
+
+regr.lrn2 = makeLearner("classif.logreg", predict.type = "prob")
+getLearnerParamSet(regr.lrn)
 
 
+mod = train(regr.lrn, task)
+mod2 = train(regr.lrn2, task)
+mod
 
 
+rdesc = makeResampleDesc("RepCV",  fold = 5, reps = 10)
+rdesc
+r = resample(regr.lrn, task, rdesc, measures = list(mmce, fpr, fnr, timetrain))
+r$measures.test
 
+pred1 = predict(mod2, task = task)
 
-
-
-
+df = generateThreshVsPerfData(pred1, measures = list(fpr, tpr, mmce))
+plotROCCurves(df)
