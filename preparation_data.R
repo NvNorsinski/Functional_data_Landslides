@@ -2,9 +2,6 @@
 rm(list = ls(all = TRUE))
 library(sf)
 
-# TODO
-# rechange numbering of colums
-
 
 yes_lsd = c("filtered_aspectns_pointVal", "filtered_aspectow_pointVal",
             "filtered_catchmantArea_pointVal", "filtered_dgm_pointVal",
