@@ -7,9 +7,13 @@ library(fda.usc)
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
 
 slope = readRDS(file = "Daten/Paldau/Samples/slope.rds")
+slopet = t(slope)
 dgm = readRDS(file = "Daten/Paldau/Samples/dgm.rds")
+dgmt = t(dgm)
 aspect_ns = readRDS(file = "Daten/Paldau/Samples/aspect_ns.rds")
+aspect_nst = t(aspect_ns)
 aspect_ow = readRDS(file = "Daten/Paldau/Samples/aspect_ow.rds")
+aspect_owt = t(aspect_ow)
 
 geology = readRDS(file = "Daten/Paldau/Samples/geology.rds")
 # categorical variables must be of type factor.
@@ -17,10 +21,14 @@ geology = readRDS(file = "Daten/Paldau/Samples/geology.rds")
 geology = geology$geology
 
 genCurvature = readRDS(file = "Daten/Paldau/Samples/genCurvature.rds")
+genCurvaturet = t(genCurvature)
 catchmant_area = readRDS(file = "Daten/Paldau/Samples/catchmantArea.rds")
+catchmant_areat = t(catchmant_area)
 tpi = readRDS(file = "Daten/Paldau/Samples/tpi.rds")
+tpit = t(tpi)
 # something is wrong with this dataset
 twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
+twit = t(twi)
 
 list_dat = list(slope, dgm, aspect_ns, aspect_ow, genCurvature, catchmant_area, tpi, twi)
 list_nam = c("slope", "dgm", "aspect_ns", "aspect_ow", "genCurvature", "catchmant_area", "tpi", "twi")
@@ -93,28 +101,31 @@ twi_basis = smooth.basis(tvec, twi, basis.x)$fd
 
 list_fd = list(slope_basis, dgm_basis, asp_ns_basis, asp_ow_basis, genCurv_basis, catch_basis, tpi_basis, twi_basis)
 
-formula1 = response ~ af(slope_basis, integration = "riemann") +
-  af(dgm_basis, integration = "riemann")+
-  af(asp_ns_basis, integration = "riemann")+
-  af(asp_ow_basis, integration = "riemann")+
-  af(genCurv_basis, integration = "riemann")+
-  af(catch_basis, integration = "riemann")+
-  af(tpi_basis, integration = "riemann")+
-  af(twi_basis, integration = "riemann")
+formula1 = response ~ af(slope_basis) +
+  af(dgm_basis)+
+  af(asp_ns_basis)+
+  af(asp_ow_basis)+
+  af(genCurv_basis)+
+  af(catch_basis)+
+  af(tpi_basis)+
+  af(twi_basis)
 
 
 
-ldata1 = list(twi = twifd, slope = slopefd, tpi = tpifd,
-              aspect_ns = aspect_nsfd, aspect_ow = aspect_owfd,
-              genCurvature = genCurvfd,
-              catchmant_area = catchfd)
 
-y = response
-formula1 = y ~ lf(slope_basis, argvals = tvec)
 
+formula1 = response ~ lf(slope_basis, argvals = tvec)
+
+# according to documentation you should use "fpca.bspline". This is wrong just use "bspline".
+# dont use standart simpson. It is remmomended for non-equidistant grids to use riemann or trapezodial
+formula1 = response ~ lf(slopet, argvals = tvec, presmooth = "bspline", presmooth.opts = list(nbasis = 4), integration = "riemann")+ lf(aspect_nst)
 
 fit = fgam(formula = formula1, family = binomial())
 
+fit = pfr(formula = formula1, family = binomial(), )
+fit$pred.formula
+
+summary(fit)
 
 
 data(gasoline)

@@ -28,7 +28,7 @@ tpi = readRDS(file = "Daten/Paldau/Samples/tpi.rds")
 # something is wrong with this dataset
 twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
 
-#out_pca = "out_pca.txt"
+out_pca = "out_pca.txt"
 
 # it is necessary to repeat the response vector for each included variable
 number_variables = 7
@@ -134,12 +134,20 @@ names = c(sl_name, tpi_name, ca_name, an_name, ao_name, twi_name, gc_name)
 rownames(fdafd$data) = names
 
 
+# correlation
+#cor = dcor.xy(aspect_nsfd, aspect_owfd)
+#cor
+#cor = dcor.xy(catchfd, twifd)
+# correlation coeffizient
+#cor$estimate
 
 # pca---------------------------------------------------------------------------
 
+
 # pca regression
 res = fregre.pc(fdafd, y = response_rep, basis.x = basis.x, P = c(1,0,0), lambda = 0)
-res
+
+summary(res)
 
 plot(res$beta.est)
 # pca
@@ -147,13 +155,10 @@ res = fdata2pc(fdafd,  ncomp = 3,norm = TRUE,lambda=0, P=c(1,0,0))
 res
 
 
-
+#plot(slopefd)
+#plot(res$rotation)
+#summary(res)
 # summary(res, y = response_rep)
-
-
-
-
-cc = fdafd$coefs
 
 
 # criteria
@@ -161,22 +166,19 @@ lambda =  c(0, 10**seq(-3, 10, by = 0.25))
 
 
 
-# penalizaton off
-#lambda = 0
-#res2 = fregre.pc.cv(fdafd, y = response_rep, lambda = lambda, P=c(1,0,0), basis.x = basis.x, kmax = 4, criteria = "SIC")
-#kmax = 40
 
-# maximum of kmax number of splines
+# maximum of kmax number of splines - 1
 
-kmax = seq(1:6)
-res2 = fregre.pc.cv(fdafd, y = response_rep, lambda = 0, P=c(1,0,0), basis.x = basis.x, kmax = 6, criteria = "SIC")
+
+res2 = fregre.pc.cv(fdafd, y = response_rep, lambda = lambda, P=c(1,0,0), basis.x = basis.x, kmax = 7, criteria = "SIC")
 res2
-res2$PC.order
-res2$MSC.order
-res2$pc.opt
-res2$lambda.opt
-res2$fregre.pc$lm
-cat(paste0(res2), file=out_pca, append = TRUE)
+summary(res2)
 
-########
+text = capture.output(res2, split = FALSE)
+cat(text, file=out_pca,sep="\n", append = TRUE)
+
+
+
+
+
 

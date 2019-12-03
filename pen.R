@@ -32,6 +32,7 @@ number_variables = 7
 
 # replicate response variable for each variable included in the model
 response_rep = rep(response, number_variables)
+response_rep <-as.factor(response_rep)
 
 leng = length(slope[1,])
 
