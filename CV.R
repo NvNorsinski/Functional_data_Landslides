@@ -2,7 +2,7 @@ rm(list = ls(all = TRUE))
 library(fda)
 library(fda.usc)
 library(ROCR)
-library(caret)
+
 
 # read data
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
@@ -24,7 +24,7 @@ twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
 
 response = as.factor(response)
 # it is necessary to repeat the response vector for each included variable
-number_variables = 6
+#number_variables = 7
 
 
 leng = length(slope[1,])
@@ -71,31 +71,34 @@ basis.x = create.bspline.basis(rangeval, norder = polynomial_order, breaks = kno
 
 basis.b = create.bspline.basis(rangeval, norder = polynomial_order, breaks = knotvec)
 
-formula1 = response ~ slope + aspect_ns + aspect_ow + tpi + genCurvature +
+formula1 = response ~ slope + aspect_ns + aspect_ow + twi+ tpi + genCurvature +
   catchmant_area
 
 # TODO repeatet cross validation
 
+k = 10
+folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
 
-folds <- cut(seq(1,nrow(slope_rand)),breaks=10,labels=FALSE)
-
-for(i in 1:10){
+auroc_list = 0
+#for(i in 1:k){
+i = 8
   print(i)
   #Segement your data by fold using the which() function
-  testIndexes <- which(folds==2,arr.ind=TRUE)
-  testData <- data_rand[testIndexes, ]
-  trainData <- data_rand[-testIndexes, ]
+  testIndexes <- which(folds==i ,arr.ind=TRUE)
+
+  #testData <- data_rand[, testIndexes]
+ # trainData <- data_rand[-testIndexes, ]
 
   # train data
 
-  response.train = response_rand[-testIndexes, ]
-  slope.train = slope_rand[-testIndexes, ]
-  aspect_ns.train = aspect_ns_rand[-testIndexes, ]
-  aspect_ow.train = aspect_ow_rand[-testIndexes, ]
-  genCurvature.train = genCurvature_rand[-testIndexes, ]
-  catchmant_area.train = catchmant_area_rand[-testIndexes, ]
-  tpi.train = tpi_rand[-testIndexes, ]
-  twi.train = twi_rand[-testIndexes, ]
+  response.train = response_rand[-testIndexes]
+  slope.train = slope_rand[, -testIndexes ]
+  aspect_ns.train = aspect_ns_rand[, -testIndexes ]
+  aspect_ow.train = aspect_ow_rand[, -testIndexes ]
+  genCurvature.train = genCurvature_rand[, -testIndexes ]
+  catchmant_area.train = catchmant_area_rand[, -testIndexes ]
+  tpi.train = tpi_rand[, -testIndexes ]
+  twi.train = twi_rand[, -testIndexes ]
 
 
 
@@ -120,26 +123,28 @@ for(i in 1:10){
   twifd.train = fdata(twi_basis.train$fd)
 
   # replicate response variable for each variable included in the model
-  response_rep.train = rep(response.train, number_variables)
+  #response.train = rep(response.train, number_variables)
 
-  df.train = as.data.frame(response_rep.train)
+  df.train = as.data.frame(response.train)
+  #colnames(df.train)
+  names(df.train) = "response"
 
   ldata.train = list(df = df.train, twi = twifd.train, slope = slopefd.train, tpi = tpifd.train,
                      aspect_ns = aspect_nsfd.train, aspect_ow = aspect_owfd.train,
-                     genCurvature = genCurvaturefd.train,
-                     catchmant_area = catchmant_areafd.train)
+                     genCurvature = genCurvfd.train,
+                     catchmant_area = catchfd.train)
 
 
 
   # test data
-  response.test = response_rand[testIndexes, ]
-  slope.test = slope_rand[testIndexes, ]
-  aspect_ns.test = aspect_ns_rand[testIndexes, ]
-  aspect_ow.test = aspect_ow_rand[testIndexes, ]
-  genCurvature.test = genCurvature_rand[testIndexes, ]
-  catchmant_area.test = catchmant_area_rand[testIndexes, ]
-  tpi.test = tpi_rand[testIndexes, ]
-  twi.test = twi_rand[testIndexes, ]
+  response.test = response_rand[testIndexes]
+  slope.test = slope_rand[, testIndexes]
+  aspect_ns.test = aspect_ns_rand[, testIndexes]
+  aspect_ow.test = aspect_ow_rand[, testIndexes]
+  genCurvature.test = genCurvature_rand[, testIndexes]
+  catchmant_area.test = catchmant_area_rand[, testIndexes]
+  tpi.test = tpi_rand[, testIndexes]
+  twi.test = twi_rand[, testIndexes]
 
 
 
@@ -164,46 +169,64 @@ for(i in 1:10){
   twifd.test = fdata(twi_basis.test$fd)
 
 
-  response_rep.test = rep(response.test, number_variables)
+  #response.test = rep(response.test, number_variables)
 
-  df.test = as.data.frame(response_rep.test)
+  df.test = as.data.frame(response.test)
+  names(df.test) = "response"
 
 
   ldata.test = list(df = df.test, twi = twifd.test, slope = slopefd.test, tpi = tpifd.test,
                      aspect_ns = aspect_nsfd.test, aspect_ow = aspect_owfd.test,
-                     genCurvature = genCurvaturefd.test,
-                     catchmant_area = catchmant_areafd.test)
+                     genCurvature = genCurvfd.test,
+                     catchmant_area = catchfd.test)
 
 
+  # regression
 
   res.basis1 = fregre.glm(formula1, data = ldata.train, basis.x = basis.x,
                           basis.b = basis.b, family = binomial(link = "logit"))
 
   summary(res.basis1)
 
+  par(mfrow=c(2,2))
+  plot(res.basis1)
+  par(mfrow=c(1,1))
+
+
 
   yfit.train = ifelse(res.basis1$fitted.values < 0.5, 0, 1)
 
-  text.train = table(response, yfit.train)
-  #text
+  text.train = table(response.train, yfit.train)
+  text.train
 
-  pred = predict.fregre.glm(res.basis1, newx = ldata.test, type = "response")
+  pred = predict(res.basis1, newx = ldata.test, type = "response", se.fit = TRUE, level = 0.95)
+
+  pred
 
   summ = summary(pred)
-  par(mfrow=c(2,2))
-  plot(pred)
-  par(mfrow=c(1,1))
-
-  yfit.test = ifelse(pred$fitted.values < 0.5, 0, 1)
-
-  text.test = table(response, yfit.test)
+  #summ
 
 
+  yfit.test = ifelse(pred$fit < 0.5, 0, 1)
+
+  text.test = table(response.test, yfit.test)
+  text.test
 
 
+  # calc auroc
+
+  predobj <- prediction(pred$fit, response.test)
+
+  auroc <- performance(predobj , measure = "auc")@y.values[[1]]
+  auroc
+  auroc_list[i] = auroc
+
+  tpr <- performance(predobj, measure = "tpr", "fpr")
+  plot(tpr, colorize = TRUE)
 
 
+#}
 
-
-
-}
+auroc_list
+mean(auroc_list)
+sd(auroc_list)
