@@ -1,6 +1,9 @@
 # put landslide and non Landslide data in one Dataframe
+# In the final data frame is an numerration from pos:1 to pos:n first postions
+# are all landslide points and then came all non landslide areas.
 rm(list = ls(all = TRUE))
 library(sf)
+library(tibble)
 
 
 yes_lsd = c("filtered_aspectns_pointVal", "filtered_aspectow_pointVal",
@@ -27,10 +30,12 @@ geology_no_landsld = readRDS(file = "Daten/Paldau/Samples/geology_nolsd_pointVal
 # output path
 responset_path = "Daten/Paldau/Samples/response.rds"
 variable_path = "Daten/Paldau/Samples/"
+geometry_path = "Daten/Paldau/Samples/geometry.rds"
 
 out = c("aspect_ns.rds", "aspect_ow.rds", "catchmantArea.rds", "dgm.rds",
         "genCurvature.rds", "planCurvature.rds", "slope.rds", "tpi.rds",
         "twi.rds")
+
 
 geology_path = "Daten/Paldau/Samples/geology.rds"
 
@@ -54,7 +59,7 @@ renam_rs_lsc = function(data, seq_radius, naming_offset = 0){
 formating = function(lsd_data, no_lsd_data){
   # Landslide Data handling
   # remove spatial data
-  lsd_data = st_drop_geometry(lsd_data)
+  #lsd_data = st_drop_geometry(lsd_data)
   # and remove id colum
   lsd_data = lsd_data[c(-1)]
   lsd_data = renam_rs_lsc(lsd_data, seq_radius)
@@ -102,7 +107,8 @@ for(i in 1:length(yes_lsd)){
   responset = dgm_dat$responset
   dat = dgm_dat$dat
 
-  saveRDS(responset, responset_path)
+  #saveRDS(responset, responset_path)
+  #saveRDS(dat, paste0(variable_path, out[i]))
   saveRDS(dat, paste0(variable_path, out[i]))
 }
 
@@ -138,4 +144,14 @@ geology$geology = factor(geology$geology)
 
 saveRDS(geology, geology_path)
 
+# dataframe containing all geographic positions of the points-------------------
+no_lsd_poi = readRDS("Daten/Paldau/Samples/randomPoints.rds")
+yes_landsld_poi = readRDS(file = "Daten/Paldau/Samples/filtered_slope_pointVal.rds")
 
+
+
+yes_landsld_poi <- do.call(rbind, st_geometry(yes_landsld_poi)) %>%
+  as_tibble() %>% setNames(c("x","y"))
+
+dat = rbind(yes_landsld_poi, no_lsd_poi)
+saveRDS(dat, geometry_path)
