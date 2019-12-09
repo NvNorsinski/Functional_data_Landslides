@@ -59,7 +59,7 @@ renam_rs_lsc = function(data, seq_radius, naming_offset = 0){
 formating = function(lsd_data, no_lsd_data){
   # Landslide Data handling
   # remove spatial data
-  #lsd_data = st_drop_geometry(lsd_data)
+  lsd_data = st_drop_geometry(lsd_data)
   # and remove id colum
   lsd_data = lsd_data[c(-1)]
   lsd_data = renam_rs_lsc(lsd_data, seq_radius)
@@ -107,9 +107,9 @@ for(i in 1:length(yes_lsd)){
   responset = dgm_dat$responset
   dat = dgm_dat$dat
 
-  #saveRDS(responset, responset_path)
-  #saveRDS(dat, paste0(variable_path, out[i]))
+  saveRDS(responset, responset_path)
   saveRDS(dat, paste0(variable_path, out[i]))
+
 }
 
 # logathim for catchmant area
