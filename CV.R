@@ -6,6 +6,7 @@ library(fda.usc)
 library(ROCR)
 library(foreach)
 library(doParallel)
+library(sperrorest)
 
 cl <- makeCluster(2)
 registerDoParallel(cl, cores = 2)
@@ -29,8 +30,14 @@ tpi = readRDS(file = "Daten/Paldau/Samples/tpi.rds")
 
 twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
 
+poi = readRDS(file = "Daten/Paldau/Samples/geometry.rds")
+
 response = as.factor(response)
 
+# k fold variable of crossvalidation
+k = 10
+# repetitions of cross validation
+repetition = 5
 
 
 leng = length(slope[1,])
@@ -39,11 +46,7 @@ lseq = function(from, to, length.out) {
   return(exp(seq(log(from), log(to), length.out = length.out)))
 }
 
-#-------------------------------------------------------------------------------
-
-
-
-
+# create basisobjects and formulas----------------------------------------------
 # create basis object
 number_knots = 3
 num_scenes = 50
@@ -69,60 +72,80 @@ formula1 = response ~ slope + aspect_ns + aspect_ow + twi+ tpi + genCurvature +
   catchmant_area
 
 
-k = 10
-repetition = 5
+resamp = partition_kmeans(poi, nfold = k, repetition = repetition, coords = c("x", "y"), seed1 = 1000)
+#-------------------------------------------------------------------------------
+# create list to store results of each repetition
+#auroc_list = 0
+#mmce_list = 0
+#rmse_list = 0
 
-auroc_list = 0
-mmce_list = 0
-
-
-
-
-# repeat cross validation
+#  cross validation sequenzial
 #for (j in 1:repetition){
 
-
+# cross validation parallel
 results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
 #set.seed(50)
-ii<-sample(1:leng)
+#ii<-sample(1:leng)
 
 
-slope_rand = slope[,ii]
-aspect_ns_rand = aspect_ns[,ii]
-aspect_ow_rand = aspect_ow[,ii]
-genCurvature_rand = genCurvature[,ii]
-catchmant_area_rand = catchmant_area[,ii]
-tpi_rand = tpi[,ii]
-twi_rand = twi[,ii]
 
-response_rand = response[ii]
+# indices to access the indices of the spatial cross vlidation in resamp object
+# repetition = j, fold = i, train(0)/test(1)
 
+
+
+
+# slope_rand = slope[,ii]
+# aspect_ns_rand = aspect_ns[,ii]
+# aspect_ow_rand = aspect_ow[,ii]
+# genCurvature_rand = genCurvature[,ii]
+# catchmant_area_rand = catchmant_area[,ii]
+# tpi_rand = tpi[,ii]
+# twi_rand = twi[,ii]
+
+  #response_rand = response[ii]
+
+
+slope_rand = slope
+aspect_ns_rand = aspect_ns
+aspect_ow_rand = aspect_ow
+genCurvature_rand = genCurvature
+catchmant_area_rand = catchmant_area
+tpi_rand = tpi
+twi_rand = twi
+
+response_rand = response
+
+
+# create lists to store results of each run k
 auroc_fold = 0
 mmce_fold = 0
+rmse_fold = 0
 
 
-folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
+#folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
 
 
   for(i in 1:k){
+    # train_idx= resamp[[j]][[i]][[0]]
+    train_idx= resamp[[j]][[i]]$train
+    #test_idx= resamp[[j]][[i]][[1]]
+    test_idx= resamp[[j]][[i]]$test
   #i = 8
     print(i)
     #Segement your data by fold using the which() function
-    testIndexes <- which(folds==i ,arr.ind=TRUE)
-
-    #testData <- data_rand[, testIndexes]
-   # trainData <- data_rand[-testIndexes, ]
+    #testIndexes <- which(folds==i ,arr.ind=TRUE)
 
     # train data
 
-    response.train = response_rand[-testIndexes]
-    slope.train = slope_rand[, -testIndexes ]
-    aspect_ns.train = aspect_ns_rand[, -testIndexes ]
-    aspect_ow.train = aspect_ow_rand[, -testIndexes ]
-    genCurvature.train = genCurvature_rand[, -testIndexes ]
-    catchmant_area.train = catchmant_area_rand[, -testIndexes ]
-    tpi.train = tpi_rand[, -testIndexes ]
-    twi.train = twi_rand[, -testIndexes ]
+    response.train = response_rand[train_idx]
+    slope.train = slope_rand[, train_idx ]
+    aspect_ns.train = aspect_ns_rand[, train_idx ]
+    aspect_ow.train = aspect_ow_rand[, train_idx ]
+    genCurvature.train = genCurvature_rand[, train_idx ]
+    catchmant_area.train = catchmant_area_rand[, train_idx ]
+    tpi.train = tpi_rand[, train_idx ]
+    twi.train = twi_rand[, train_idx ]
 
 
 
@@ -146,11 +169,10 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
     tpifd.train = fdata(tpi_basis.train$fd)
     twifd.train = fdata(twi_basis.train$fd)
 
-    # replicate response variable for each variable included in the model
-    #response.train = rep(response.train, number_variables)
+
 
     df.train = as.data.frame(response.train)
-    #colnames(df.train)
+
     names(df.train) = "response"
 
     ldata.train = list(df = df.train, twi = twifd.train, slope = slopefd.train, tpi = tpifd.train,
@@ -161,14 +183,14 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
 
 
     # test data
-    response.test = response_rand[testIndexes]
-    slope.test = slope_rand[, testIndexes]
-    aspect_ns.test = aspect_ns_rand[, testIndexes]
-    aspect_ow.test = aspect_ow_rand[, testIndexes]
-    genCurvature.test = genCurvature_rand[, testIndexes]
-    catchmant_area.test = catchmant_area_rand[, testIndexes]
-    tpi.test = tpi_rand[, testIndexes]
-    twi.test = twi_rand[, testIndexes]
+    response.test = response_rand[test_idx]
+    slope.test = slope_rand[, test_idx]
+    aspect_ns.test = aspect_ns_rand[, test_idx]
+    aspect_ow.test = aspect_ow_rand[, test_idx]
+    genCurvature.test = genCurvature_rand[, test_idx]
+    catchmant_area.test = catchmant_area_rand[, test_idx]
+    tpi.test = tpi_rand[, test_idx]
+    twi.test = twi_rand[, test_idx]
 
 
 
@@ -193,7 +215,7 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
     twifd.test = fdata(twi_basis.test$fd)
 
 
-    #response.test = rep(response.test, number_variables)
+
 
     df.test = as.data.frame(response.test)
     names(df.test) = "response"
@@ -205,7 +227,7 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
                        catchmant_area = catchfd.test)
 
 
-    # regression
+
 
     res.basis1 = fregre.glm(formula1, data = ldata.train, basis.x = basis.x,
                             basis.b = basis.b, family = binomial(link = "logit"))
@@ -225,7 +247,7 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
 
     pred = predict(res.basis1, newx = ldata.test, type = "response", se.fit = TRUE, level = 0.95)
 
-    pred
+
 
     summ = summary(pred)
     #summ
@@ -237,41 +259,45 @@ folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
     text.test
 
 
-    # calc auroc
+    # calc error measures
 
     predobj <- prediction(pred$fit, response.test)
 
     auroc <- performance(predobj , measure = "auc")@y.values[[1]]
-    auroc
     auroc_fold[i] = auroc
 
-    #tpr <- performance(predobj, measure = "tpr", "fpr")
-    #plot(tpr, colorize = TRUE)
+    rmse <- performance(predobj , measure = "rmse")@y.values[[1]]
+    rmse_fold[i] = rmse
 
-    # calc mmce
     mmce <- 1 - (sum(diag(text.test))/sum(text.test))
     mmce_fold[i] = mmce
 
 
   }
 
-auroc_list[j] = mean(auroc_fold)
-mmce_list[j] = mean(mmce_fold)
+#auroc_list[j] = mean(auroc_fold)
+#mmce_list[j] = mean(mmce_fold)
+#rmse_list[j] = mean(rmse_fold)
 
 aurocn = mean(auroc_fold)
 mmcen = mean(mmce_fold)
-data.frame(auroc = aurocn, mmce = mmcen)
+rmsen = mean(rmse_fold)
+data.frame(auroc = aurocn, mmce = mmcen, rmse = rmsen)
 
 #print(auroc_list)
 #print(mean(auroc_list))
 #print(sd(auroc_list))
 }
+
 parallel::stopCluster(cl)
 
+# create index to subset the data frame and store results columwise
+results = t(results)
+index = seq(1, repetition * 3, by = 3)
+
+
+results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2])
+
+results = colMeans(results)
 results
 
-results = t(results)
-index = seq(1,repetition * 2, by = 2)
-
-
-results = data.frame(auroc = results[index], mmce = results[index + 1])
