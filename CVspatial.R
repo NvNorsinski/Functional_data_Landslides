@@ -221,7 +221,7 @@ resamp = partition_kmeans(poi, nfold = k, repetition = repetition, coords = c("x
 # cross validation parallel
 
 CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, poi, response, resamp,
-              tpi, twi, tvec, catchmant_area, formula1, regress_and_error){
+              tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition){
 
 results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
 
@@ -241,7 +241,7 @@ rmse_fold = 0
   #i = 8
     errors = regress_and_error(slope = slope, aspect_ow = aspect_ow, aspect_ns = aspect_ns,
                                response = response, genCurvature, twi = twi, tpi = tpi,
-                               catchmant_area = catchmant_area,i = i, j = j, resamp = resamp, basis.x = basis.x,
+                               catchmant_area = catchmant_area, i = i, j = j, resamp = resamp, basis.x = basis.x,
                                basis.b = basis.b, tvec = tvec, formula1 = formula1)
     auroc_fold[i] = errors[[1]]
     rmse_fold[i] = errors[[2]]
@@ -268,7 +268,7 @@ return(results)
 
 
 results = CV(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, poi, response, resamp,
-        tpi, twi, tvec, catchmant_area, formula1, regress_and_error)
+        tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition)
 
 
 
