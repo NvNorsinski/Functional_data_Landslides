@@ -35,19 +35,21 @@ poi = readRDS(file = "Daten/Paldau/Samples/geometry.rds")
 response = as.factor(response)
 
 # k fold variable of crossvalidation
-k = 10
+k = 3
 # repetitions of cross validation
-repetition = 5
+repetition = 2
 
 
 leng = length(slope[1,])
+
+
 
 lseq = function(from, to, length.out) {
   return(exp(seq(log(from), log(to), length.out = length.out)))
 }
 
 regress_and_error = function(response_rand, slope_rand, aspect_ow_rand, aspect_ns_rand, genCurvature_rand, catchmant_area_rand,
-                       tpi_rand, twi_rand, basis.x,basis.b, formula1, tvec, i){
+                       tpi_rand, twi_rand, i, folds){
   testIndexes <- which(folds==i ,arr.ind=TRUE)
 
   # train data
@@ -175,21 +177,17 @@ regress_and_error = function(response_rand, slope_rand, aspect_ow_rand, aspect_n
   predobj <- prediction(pred$fit, response.test)
 
   auroc <- performance(predobj , measure = "auc")@y.values[[1]]
-  auroc_fold[i] = auroc
-
   rmse <- performance(predobj , measure = "rmse")@y.values[[1]]
-  rmse_fold[i] = rmse
-
   mmce <- 1 - (sum(diag(text.test))/sum(text.test))
-  mmce_fold[i] = mmce
 
-  return(list(auroc_fold, rmse_fold, mmce_fold))
+
+  return(list(auroc, rmse, mmce))
 
 }
 
 # create basisobjects and formulas----------------------------------------------
 # create basis object
-number_knots = 3
+number_knots = 4
 num_scenes = 50
 min = 1
 
@@ -212,8 +210,6 @@ basis.b = create.bspline.basis(rangeval, norder = polynomial_order, breaks = kno
 formula1 = response ~ slope + aspect_ns + aspect_ow + twi+ tpi + genCurvature +
   catchmant_area
 
-
-resamp = partition_kmeans(poi, nfold = k, repetition = repetition, coords = c("x", "y"), seed1 = 1000)
 #-------------------------------------------------------------------------------
 # create list to store results of each repetition
 #auroc_list = 0
@@ -227,66 +223,59 @@ resamp = partition_kmeans(poi, nfold = k, repetition = repetition, coords = c("x
 results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
 #set.seed(50)
   # uncomment for non spatial cross validation----------------------------------
-ii<-sample(1:leng)
+  ii<-sample(1:leng)
 
- slope_rand = slope[,ii]
- aspect_ns_rand = aspect_ns[,ii]
- aspect_ow_rand = aspect_ow[,ii]
- genCurvature_rand = genCurvature[,ii]
- catchmant_area_rand = catchmant_area[,ii]
- tpi_rand = tpi[,ii]
- twi_rand = twi[,ii]
+  slope_rand = slope[,ii]
+  aspect_ns_rand = aspect_ns[,ii]
+  aspect_ow_rand = aspect_ow[,ii]
+  genCurvature_rand = genCurvature[,ii]
+  catchmant_area_rand = catchmant_area[,ii]
+  tpi_rand = tpi[,ii]
+  twi_rand = twi[,ii]
 
-response_rand = response[ii]
-folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
-  #-----------------------------------------------------------------------------
+  response_rand = response[ii]
+  folds <- cut(seq(1, ncol(slope_rand)), breaks=k,labels=FALSE)
 
-
-
-#-------------------------------------------------------------------------------
-# create lists to store results of each run k
-auroc_fold = 0
-mmce_fold = 0
-rmse_fold = 0
+  #-------------------------------------------------------------------------------
+  # create lists to store results of each run k
+  auroc_fold = 0
+  mmce_fold = 0
+  rmse_fold = 0
 
 
   for(i in 1:k){
-
-  #i = 8
-    print(i)
-   result = regress_and_error(slope_rand = slope_rand, aspect_ow_rand = aspect_ow_rand, aspect_ns_rand = aspect_ns_rand,
+  #i = 1
+   errors = regress_and_error(slope_rand = slope_rand, aspect_ow_rand = aspect_ow_rand, aspect_ns_rand = aspect_ns_rand,
                response_rand = response_rand, genCurvature_rand, twi_rand = twi_rand, tpi_rand = tpi_rand,
-               catchmant_area_rand = catchmant_area_rand, i=i, tvec = tvec, basis.x = basis.x, basis.b = basis.b, formula1 = formula1)
-   auroc_fold = result[[1]]
-   rmse_fold = result[[2]]
-   mmce_fold = result[[3]]
+               catchmant_area_rand = catchmant_area_rand, i=i, folds = folds)
+   auroc_fold[i] = errors[[1]]
+   rmse_fold[i] = errors[[2]]
+   mmce_fold[i] = errors[[3]]
 
 
   }
 
-#auroc_list[j] = mean(auroc_fold)
-#mmce_list[j] = mean(mmce_fold)
-#rmse_list[j] = mean(rmse_fold)
+
 
 aurocn = mean(auroc_fold)
+sd_auroc = sd(auroc_fold)
+#print(sd_auroc)
 mmcen = mean(mmce_fold)
 rmsen = mean(rmse_fold)
-data.frame(auroc = aurocn, mmce = mmcen, rmse = rmsen)
 
-#print(auroc_list)
-#print(mean(auroc_list))
-#print(sd(auroc_list))
+data.frame(auroc = aurocn, mmce = mmcen, rmse = rmsen, sd_auroc = sd_auroc)
+
 }
 
 parallel::stopCluster(cl)
 
 # create index to subset the data frame and store results columwise
 results = t(results)
-index = seq(1, repetition * 3, by = 3)
+index = seq(1, repetition * 4, by = 4)
 
 
-results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2])
+results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2], sd_auroc = results[index+3])
 
-results = colMeans(results)
-results
+#results = colMeans(results)
+#results
 
