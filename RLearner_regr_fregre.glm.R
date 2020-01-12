@@ -1,10 +1,7 @@
-#' @title regression of functional data by Generalized Linear Models.
-#'
-#' @description
-#' Learner for regression using Generalized Linear Models.
-#'
-#' @export
-#'
+library(fda.usc)
+library(mlr)
+library(parallelMap)
+
 makeRLearner.regr.fregre.glm = function() {
   makeRLearnerRegr(
     cl = "regr.fregre.glm",
@@ -22,7 +19,7 @@ makeRLearner.regr.fregre.glm = function() {
   )
 }
 
-#' @export
+
 trainLearner.regr.fregre.glm = function(.learner, .task, .subset, .weights = NULL, ...) {
 
   # Get and transform functional data
@@ -42,7 +39,7 @@ trainLearner.regr.fregre.glm = function(.learner, .task, .subset, .weights = NUL
   return(model)
 }
 
-#' @export
+
 predictLearner.regr.fregre.glm = function(.learner, .model, .newdata, ...) {
   # transform the data into fda.usc:fdata class type.
   fd = getFunctionalFeatures(.newdata)
@@ -63,3 +60,6 @@ registerS3method("predictLearner", "regr.fregre.glm",
 
 parallelExport("trainLearner.regr.fregre.glm",
                "predictLearner.regr.fregre.glm")
+
+
+
