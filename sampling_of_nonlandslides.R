@@ -1,4 +1,4 @@
-# sample non landslides from raster
+# sample non landslide area from raster
 rm(list = ls(all = TRUE))
 library(raster)
 library(sf)
@@ -17,6 +17,23 @@ out_names = c("rnd_no_lsd_Paldau_aspect_ns", "rnd_no_lsd_Paldau_aspect_ow",
               "rnd_no_lsd_Paldau_planCurvature", "rnd_no_lsd_Paldau_slope",
               "rnd_no_lsd_Paldau_tpi", "rnd_no_lsd_Paldau_twi")
 
+# ouput path
+path_to_out = "Daten/Paldau/Samples"
+name_mask = "maskPaldau"
+# input path
+path_to_giant = "Daten/Paldau/Landslides/Giant_Paldau.shp"
+path_to_minor = "Daten/Paldau/Landslides/Landslides_Paldau_02_18.shp"
+path_rnd_poi = "Daten/Paldau/Samples/randomPoints.rds"
+
+
+# read images
+giant = st_read(path_to_giant)
+minor = st_read(path_to_minor)
+
+# union of the polygons
+giant = as(giant, 'Spatial')
+minor = as(minor, "Spatial")
+lanslde_poly = gUnion(giant, minor)
 
 #-------------------------------------------------------------------------------
 
@@ -24,33 +41,15 @@ out_names = c("rnd_no_lsd_Paldau_aspect_ns", "rnd_no_lsd_Paldau_aspect_ow",
 for (i in 1:length(files)){
   # input path
   path_to_images = paste0("Daten/Paldau/Parameters/", files[i])
-  path_to_giant = "Daten/Paldau/Landslides/Giant_Paldau.shp"
-  path_to_minor = "Daten/Paldau/Landslides/Landslides_Paldau_02_18.shp"
-  path_rnd_poi = "Daten/Paldau/Samples/randomPoints.rds"
-
-  # read images
-  giant = st_read(path_to_giant)
-  minor = st_read(path_to_minor)
-
-  # union of different polygons
-  giant = as(giant, 'Spatial')
-  minor = as(minor, "Spatial")
-  lanslde_poly = gUnion(giant, minor)
-
-  # ouput path
-  path_to_out = "Daten/Paldau/Samples"
-  name_mask = "maskPaldau"
-  name_random_values = out_names[i]
-
-
 
   # create raster stack
   fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE)
   fs
   rasStack = stack(fs)
-
-  # only run this section if no mask layer is calculatet  ------------------------
-  # create mask image
+  # create a mask to mask out landslide areas-----------------------------------
+  # It is neccesarry to mask these areas out because in the next step areas of non
+  # landslides should be sampled
+  # only run this section if no mask layer was calculatet before, this step take a while
 
   # uncomment to create mask
 
@@ -75,13 +74,22 @@ for (i in 1:length(files)){
   # writeRaster(mask, filename=file.path(path_to_out, name_mask),
   #             format = "GTiff", overwrite = TRUE)
 
-  # same random points for all samplings
+
+# generate random points of non landslide area----------------------------------
+
+  # rerun this section with caution!!!!
+  # because it will generate new random points and
+  # overwrite old ones. In this case the extraction of values from images has to
+  # be redone.
+
+  # uncomment these 3 lines to run generate new random non landslide points
+
   #rnd_poi = as.data.frame(randomPoints(mask = rasStack, n = 400))
   #rnd_poi
-
   # saveRDS(rnd_poi, "Daten/Paldau/Samples/randomPoints.rds")
 
-  # end of region not to run------------------------------------------------------
+  # end of region not to run----------------------------------------------------
+  # read random points and extract from raster image at these coordinates
   rnd_poi = readRDS(path_rnd_poi)
 
   # create new raster Stack, with mask image as first image
@@ -94,5 +102,5 @@ for (i in 1:length(files)){
 
   samples_df = as.data.frame(t(ext))
 
-  saveRDS(samples_df, paste0(path_to_out,"/", name_random_values,".rds"))
+  saveRDS(samples_df, paste0(path_to_out,"/", out_names[i],".rds"))
 }
