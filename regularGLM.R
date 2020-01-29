@@ -3,8 +3,7 @@ library(mlr)
 library(ROCR)
 library(fda.usc)
 
-library("parallelMap")
-parallelStartSocket(2)
+
 
 # read data
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
@@ -58,7 +57,6 @@ list_nam = c("slope", "aspect_ns", "aspect_ow", "genCurvature", "catchmant_area"
 # predict-----------------------------------------------------------------------
 
 
-
 #task = makeRegrTask(id = "logi", data = dat, target = "response")
 response = as.factor(response)
 dat = cbind(response, slope, aspect_ns, aspect_ow, genCurvature, catchmant_area, tpi, twi)
@@ -90,7 +88,7 @@ r$aggr
 #df = generateThreshVsPerfData(pred1, measures = list(fpr, tpr, mmce))
 #plotROCCurves(df)
 
-parallelStop()
+
 
 #predict(regmod, dat, type = "response" )
 
