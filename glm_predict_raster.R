@@ -1,10 +1,16 @@
 rm(list = ls(all = TRUE))
 library(raster)
+library(mgcv)
+
+# rasper predict glm
 model = readRDS("Daten/Paldau/Outputs/glm_model.rds")
 
 
-model$terms
-path_to_images = "C:/Users/Nils-Laptop/Documents/Master"
+
+
+# file contains original unsmoothed images of all variables
+# e.q. slop, aspect,...
+path_to_images = "Daten/Paldau/nonfunctional/glm/"
 
 fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE, recursive = TRUE)
 fs
@@ -13,7 +19,24 @@ rasStack = stack(fs)
 rasStack
 
 
-image = predict(rasStack, model,type = "response",  progress='text')
+image = predict(rasStack, model,type = "response", se.fit = TRUE, progress='text')
+
+
+image
+img
+
+# return se???
+# predfun <- function(model, data) {
+#   v <- predict(model, data,type = "response", se.fit=TRUE)
+#   cbind(p=as.vector(v$fit), se=as.vector(v$se.fit))
+# }
+#
+#
+# r2 <- predict(rasStack, model, fun=predfun, index=1:2)
+#
+# plot(r2$layer.2)
+
+
 
 img_cat = image
 
@@ -29,20 +52,48 @@ plot(img_cat)
 plot(image)
 
 
-writeRaster(image, "Daten/Paldau/Outputs/prob_map_glm",  format="GTiff", overwrite=TRUE)
+#writeRaster(r2$layer.2, "Daten/Paldau/Outputs/prob_map_glm2",  format="GTiff", overwrite=TRUE)
 
 writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map__categories_glm",  format="GTiff", overwrite=TRUE)
 
 image
 
+# raster predict gam-----------------------------------------------------------
 
-r <- raster(ncol=10, nrow=10)
-values(r) <- 1:ncell(r)
+model = readRDS("Daten/Paldau/Outputs/model_gam_r.rds")
+model$model
+path_to_images = "Daten/Paldau/nonfunctional/gam/"
+# variable names are different than in glm model, so renameing images is neccessary
 
-plot(r)
 
-r[r < 60  & r > 40] <- 50
+fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE, recursive = TRUE)
+fs
 
-plot(r)
+rasStack = stack(fs)
+rasStack
 
-r[8,]
+
+
+image = predict(rasStack, model,type = "response", se.fit = TRUE, progress='text')
+
+
+
+
+
+img_cat = image
+
+img_cat[img_cat <= 0.25] = 0.25
+img_cat[img_cat <= 0.5 & img_cat > 0.25 ] = 0.5
+img_cat[img_cat <= 0.75 & img_cat > 0.5 ] = 0.75
+img_cat[img_cat <= 0.9 & img_cat > 0.75 ] = 0.9
+img_cat[img_cat <= 1 & img_cat > 0.9 ] = 1
+
+
+plot(img_cat)
+
+plot(image)
+
+writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map_categories_gam",  format="GTiff", overwrite=TRUE)
+
+writeRaster(image, "Daten/Paldau/Outputs/prob_map_gam",  format="GTiff", overwrite=TRUE)
+
