@@ -37,11 +37,17 @@ response = as.factor(response)
 # k fold variable of crossvalidation
 k_inner = 2
 # number of outer folds for nested cross validation
-k_outer = 5
+k_outer = 3
 # repetitions of inner cross validation
-repetition_inner = 10
+repetition_inner = 5
 
 repetition_outer = 1
+
+# degrees of freedom for gam
+# keep under 7 because with the used data there are not enough data for more degrees
+# of freedom
+
+dgf = 7
 
 win_list = data.frame(auroc = double(), polynomial_order = integer(), number_knots = integer())
 results_list = data.frame(auroc = double(), mmce = double(), polynomial = integer(), breaks = integer())
@@ -156,14 +162,12 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
 
 
 
-  res.basis1 = fregre.glm(formula1, data = ldata.train, basis.x = basis.x,
-                          basis.b = basis.b, family = binomial(link = "logit"))
+  res.basis1 = fda.usc::fregre.gsam(formula = formula1, data = ldata.train, basis.x = basis.x,
+                          basis.b = basis.b, family = binomial(link = "logit"), CV = FALSE)
 
   summary(res.basis1)
 
-  par(mfrow=c(2,2))
-  plot(res.basis1)
-  par(mfrow=c(1,1))
+
 
 
 
@@ -172,11 +176,11 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
   text.train = table(response.train, yfit.train)
   text.train
 
-  pred = predict(res.basis1, newx = ldata.test, type = "response", se.fit = TRUE, level = 0.95)
+  pred = predict(res.basis1, newx = ldata.test, type = "response")
 
 
 
- # summ = summary(pred)
+  # summ = summary(pred)
   #summ
 
 
@@ -203,7 +207,8 @@ CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, po
               tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition){
 
 
-  results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
+  #results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
+    for (j in 1:repetition){
 
 
 
@@ -263,8 +268,9 @@ rangeval = c(min, num_scenes)
 
 basis.b = create.bspline.basis(rangeval, norder = 4, breaks = knotvec_b)
 
-formula1 = response ~ slope + aspect_ns + aspect_ow + twi + tpi + genCurvature +
-  catchmant_area
+formula1 = response ~ s(slope, k = dgf) + s(aspect_ns, k = dgf) + s(aspect_ow, k = dgf) +
+  s(twi, k = dgf) + s(tpi, k = dgf) + s(genCurvature, k = dgf) +
+  s(catchmant_area, k = dgf)
 
 
 
@@ -275,78 +281,78 @@ resamp_outer = partition_kmeans(poi, nfold = k_outer, repetition = repetition_ou
 #------------------------------------------------------------------------------
 
 nested_outer = for (l in 1:repetition_outer){
-#l = 1
+  #l = 1
 
 
- for (m in 1:k_outer) {
-#m = 2
-  auroc_nested = 0
-  mmce_nested = 0
-  rmse_nested = 0
+  for (m in 1:k_outer) {
+    #m = 2
+    auroc_nested = 0
+    mmce_nested = 0
+    rmse_nested = 0
 
 
-  train_outer = poi[resamp_outer[[l]][[m]]$train, ]
-  test_outer = poi[resamp_outer[[l]][[m]]$test, ]
+    train_outer = poi[resamp_outer[[l]][[m]]$train, ]
+    test_outer = poi[resamp_outer[[l]][[m]]$test, ]
 
 
-  resamp_inner = partition_kmeans(train_outer, nfold = k_inner, repetition = repetition_inner, coords = c("x", "y"), seed1 = 999)
+    resamp_inner = partition_kmeans(train_outer, nfold = k_inner, repetition = repetition_inner, coords = c("x", "y"), seed1 = 999)
 
 
-  # number of knots = i
-  # polynomial order = j, cubic b splines = 4
-  #10,6
-  for (nk in 3:10) {
-    for (po in 4:10){
-  #nk = 3
- # po = 3
+    # number of knots = i
+    # polynomial order = j, cubic b splines = 4
+    #10,6
+    for (nk in 4:6) {
+      for (po in 4:7){
+        #nk = 3
+        # po = 3
 
-      # create basis object
+        # create basis object
 
-      print(paste0("nk: ", nk))
-      print(paste0("po: ", po))
+        print(paste0("nk: ", nk))
+        print(paste0("po: ", po))
 
-      knotvec = lseq(from = min, to = num_scenes, length.out = nk)
-
-
-
-      basis.x = create.bspline.basis(rangeval, norder = po, breaks = knotvec)
-
-      results = CV(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k = k_inner, poi, response, resamp = resamp_inner,
-                   tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition = repetition_inner)
+        knotvec = lseq(from = min, to = num_scenes, length.out = nk)
 
 
-      # save to data frame
-      results = t(results)
-      index = seq(1, repetition_inner * 4, by = 4)
-      results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2], sd_auroc = results[index + 3])
+
+        basis.x = create.bspline.basis(rangeval, norder = po, breaks = knotvec)
+
+        results = CV(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k = k_inner, poi, response, resamp = resamp_inner,
+                     tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition = repetition_inner)
 
 
-      result_mean = data.frame(auroc = mean(results$auroc), polynomial_order = po,
-                               number_knots = nk)
-
-      result_mean
-
-
-      results_list_all =  rbind(results_list_all, result_mean)
-      result_mean = results_list_all[order(results_list_all$auroc, decreasing = TRUE), ]
+        # save to data frame
+        results = t(results)
+        index = seq(1, repetition_inner * 4, by = 4)
+        results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2], sd_auroc = results[index + 3])
 
 
+        result_mean = data.frame(auroc = mean(results$auroc), polynomial_order = po,
+                                 number_knots = nk)
+
+        result_mean
+
+
+        results_list_all =  rbind(results_list_all, result_mean)
+        result_mean = results_list_all[order(results_list_all$auroc, decreasing = TRUE), ]
+
+
+      }
     }
-    }
 
 
-  # extract winning model
-  winning_model = result_mean[1, ]
-  results_list = rbind(results_list, winning_model)
+    # extract winning model
+    winning_model = result_mean[1, ]
+    results_list = rbind(results_list, winning_model)
 
-  poly = winning_model$polynomial_order
-  number_knots = winning_model$number_knots
+    poly = winning_model$polynomial_order
+    number_knots = winning_model$number_knots
 
-  knotvec = lseq(from = min, to = num_scenes, length.out = number_knots)
+    knotvec = lseq(from = min, to = num_scenes, length.out = number_knots)
 
-  winning_model = create.bspline.basis(rangeval, norder = poly, breaks = knotvec)
+    winning_model = create.bspline.basis(rangeval, norder = poly, breaks = knotvec)
 
-  # retrain model
+    # retrain model
 
 
     train_dat = resamp_outer[[l]][[m]]$train
@@ -357,7 +363,7 @@ nested_outer = for (l in 1:repetition_outer){
 
 
     res = regress_and_error(response, slope, aspect_ow, aspect_ns, genCurvature, catchmant_area,
-                                    tpi, twi, resamp = resamp_outer, i = m, j = l, basis.x, basis.b, tvec, formula1)
+                            tpi, twi, resamp = resamp_outer, i = m, j = l, basis.x, basis.b, tvec, formula1)
     res
 
     auroc = res[[1]]
