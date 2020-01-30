@@ -184,15 +184,16 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
   #summ
 
 
-  yfit.test = ifelse(pred$fit < 0.5, 0, 1)
+  yfit.test = ifelse(pred < 0.5, 0, 1)
 
+  # convert to numeric for gsam
   text.test = table(response.test, yfit.test)
   #text.test
 
 
   # calc error measures
 
-  predobj <- prediction(pred$fit, response.test)
+  predobj <- prediction(as.numeric(pred), as.numeric(response.test))
 
   auroc <- performance(predobj , measure = "auc")@y.values[[1]]
   rmse <- performance(predobj , measure = "rmse")@y.values[[1]]
@@ -207,8 +208,8 @@ CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, po
               tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition){
 
 
-  #results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
-    for (j in 1:repetition){
+  results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
+   # for (j in 1:repetition){
 
 
 
@@ -268,9 +269,13 @@ rangeval = c(min, num_scenes)
 
 basis.b = create.bspline.basis(rangeval, norder = 4, breaks = knotvec_b)
 
-formula1 = response ~ s(slope, k = dgf) + s(aspect_ns, k = dgf) + s(aspect_ow, k = dgf) +
-  s(twi, k = dgf) + s(tpi, k = dgf) + s(genCurvature, k = dgf) +
-  s(catchmant_area, k = dgf)
+
+
+formula1 = response ~ s(slope, k = 7) + s(aspect_ns, k = 7) + s(aspect_ow, k = 7) +
+  s(twi, k = 7) + s(tpi, k = 7) + s(genCurvature, k = 7) +
+  s(catchmant_area, k = 7)
+
+
 
 
 
