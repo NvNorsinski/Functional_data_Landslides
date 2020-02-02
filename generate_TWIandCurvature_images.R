@@ -10,7 +10,7 @@ path_to_slope_image = "Daten/Paldau/Parameters/slope_paldau.tif"
 path_to_dgm = "Daten/Paldau/Parameters/filtered_images_dgm"
 
 # define output image path
-path_to_out = "Daten/Paldau/Parameters/"
+path_to_out = "Daten/Paldau/"
 
 
 # define output image name
@@ -32,9 +32,30 @@ normalized_height = "Daten/Paldau/Parameters/Filtered_images_normalizedHeight/"
 
 get_usage(alg = "grass7:r.slope.aspect")
 
-#params = get_args_man(alg = "saga:slopeaspectcurvature")
+params = get_args_man(alg = "saga:slopeaspectcurvature")
+params
 
-params = get_args_man(alg = "grass7:r.slope.aspect")
+fs = list.files(path = path_to_dgm, pattern = "tif$", full.names = TRUE)
+fs
+
+count = 0
+
+for (i in fs){
+  params$ELEVATION = i
+  params$SLOPE = paste0(path_to_out, "slope_",100+count)
+  params$ASPECT = paste0(path_to_out, "aspect_",100 + count)
+  params$C_GENE = paste0(path_to_out, "general_curvature_",100+count)
+  params$C_PLAN = paste0(path_to_out, "plan_curvature_",100+count)
+  params$METHOD = 6
+  count = count +1
+
+  run_qgis(alg = "saga:slopeaspectcurvature",
+                 params = params)
+
+}
+
+
+#params = get_args_man(alg = "grass7:r.slope.aspect")
 
 params
 
@@ -109,6 +130,7 @@ get_usage(alg = "gdalogr:tpitopographicpositionindex")
 
 find_algorithms(search_term = "(tpi)")
 params = get_args_man(alg = "gdalogr:tpitopographicpositionindex")
+params = get_args_man(alg = "saga:topographicpositionindextpi")
 params
 
 fs = list.files(path = path_to_dgm, pattern = "tif$", full.names = TRUE)
