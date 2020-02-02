@@ -1,5 +1,5 @@
 rm(list = ls(all = TRUE))
-library(ggbiplot)
+library(factoextra)
 
 # read data
 #response = readRDS(file = "Daten/Paldau/Samples/response.rds")
@@ -33,4 +33,6 @@ pca
 summary(pca)
 plot(pca)
 
-#biplot(pca)
+
+fviz_screeplot(pca, addlabels = TRUE, ylim = c(0, 100), title="")
+
