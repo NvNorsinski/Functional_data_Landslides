@@ -4,6 +4,7 @@ library(raster)
 library(sf)
 library(sp)
 library(rgeos)
+library(dismo)
 
 
 files = c("Filtered_images_aspect_ns", "Filtered_images_aspect_ow",
@@ -39,6 +40,7 @@ lanslde_poly = gUnion(giant, minor)
 
 
 for (i in 1:length(files)){
+
   # input path
   path_to_images = paste0("Daten/Paldau/Parameters/", files[i])
 
