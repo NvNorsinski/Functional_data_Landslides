@@ -1,3 +1,6 @@
+# author Nils von Norsinski
+# apply a series of box or gaussian filters with varien size of moving window
+
 import cv2
 import imageio
 from matplotlib import pyplot as plt
