@@ -1,4 +1,4 @@
-# author Nils von Norsinksi
+# author Nils von Norsinski
 # apply a series of box or gaussian filters with varien size of moving window
 
 import cv2
