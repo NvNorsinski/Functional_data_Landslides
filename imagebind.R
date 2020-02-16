@@ -1,3 +1,5 @@
+# Author: Nils von Norsinski
+# Bind chunks of predicting together to one image
 rm(list = ls(all = TRUE))
 library(raster)
 library(rgdal)
@@ -15,7 +17,7 @@ res = res(source_img)
 files = list.files(path = path, pattern = ".rds")
 files
 
-# dimensions of image and chunck
+# dimensions of image and chunks
 x = 10464
 y = 300
 
@@ -35,7 +37,6 @@ for (k in files) {
 
 }
 
-# number of last file in the brackets
 leng = length(files)
 leng
 img = readRDS(paste0(path,files[leng]))
@@ -53,11 +54,11 @@ dim(image_comp)
 r = raster(image_comp)
 
 extent(r) = ext
-#res(r) = res
 crs(r) = crs
 
 plot(r)
-writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_cut",  format="GTiff", overwrite=TRUE)
+writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_cut",
+            format="GTiff", overwrite=TRUE)
 #create error map---------------------------------------------------------------
 image_comp_err = 0
 for (k in files) {
@@ -86,4 +87,5 @@ crs(r) = crs
 plot(r)
 r
 
-writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_error_cut",  format="GTiff", overwrite=TRUE)
+writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_error_cut",
+            format="GTiff", overwrite=TRUE)

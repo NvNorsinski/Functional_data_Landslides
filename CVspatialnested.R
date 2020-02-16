@@ -1,4 +1,4 @@
-# This script performs cross validation for funktional regression models
+# This script performs spatial cross validation for funktional regression models
 # Author Nils von Norsinski
 rm(list = ls(all = TRUE))
 library(fda)
@@ -8,7 +8,7 @@ library(foreach)
 library(doParallel)
 library(sperrorest)
 
-cl <- makeCluster(2)
+cl = makeCluster(2)
 registerDoParallel(cl, cores = 2)
 
 
@@ -43,9 +43,12 @@ repetition_inner = 10
 
 repetition_outer = 1
 
-win_list = data.frame(auroc = double(), polynomial_order = integer(), number_knots = integer())
-results_list = data.frame(auroc = double(), mmce = double(), polynomial = integer(), breaks = integer())
-results_list_all = data.frame(auroc = double(), mmce = double(), polynomial = integer(), breaks = integer())
+win_list = data.frame(auroc = double(), polynomial_order = integer(),
+                      number_knots = integer())
+results_list = data.frame(auroc = double(), mmce = double(),
+                          polynomial = integer(), breaks = integer())
+results_list_all = data.frame(auroc = double(), mmce = double(),
+                              polynomial = integer(), breaks = integer())
 
 leng = length(slope[1,])
 
@@ -57,12 +60,15 @@ lseq = function(from, to, length.out) {
 
 #-------------------------------------------------------------------------------
 
-regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature, catchmant_area,
-                             tpi, twi, resamp, i, j, basis.x, basis.b, tvec, formula1){
+regress_and_error = function(response, slope, aspect_ow, aspect_ns,
+                             genCurvature, catchmant_area,
+                             tpi, twi, resamp, i, j, basis.x,
+                             basis.b, tvec, formula1){
 
 
   # train data
-  # indices to access the indices of the spatial cross validation in resamp object
+  # indices to access the indices of the spatial cross validation in resamp
+  # object
   # repetition = j, fold = i, train(0)/test(1)
 
   train_idx= resamp[[j]][[i]]$train
@@ -103,8 +109,10 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
 
   names(df.train) = "response"
 
-  ldata.train = list(df = df.train, twi = twifd.train, slope = slopefd.train, tpi = tpifd.train,
-                     aspect_ns = aspect_nsfd.train, aspect_ow = aspect_owfd.train,
+  ldata.train = list(df = df.train, twi = twifd.train, slope = slopefd.train,
+                     tpi = tpifd.train,
+                     aspect_ns = aspect_nsfd.train,
+                     aspect_ow = aspect_owfd.train,
                      genCurvature = genCurvfd.train,
                      catchmant_area = catchfd.train)
 
@@ -148,7 +156,8 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
   names(df.test) = "response"
 
 
-  ldata.test = list(df = df.test, twi = twifd.test, slope = slopefd.test, tpi = tpifd.test,
+  ldata.test = list(df = df.test, twi = twifd.test, slope = slopefd.test,
+                    tpi = tpifd.test,
                     aspect_ns = aspect_nsfd.test, aspect_ow = aspect_owfd.test,
                     genCurvature = genCurvfd.test,
                     catchmant_area = catchfd.test)
@@ -172,7 +181,8 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
   text.train = table(response.train, yfit.train)
   text.train
 
-  pred = predict(res.basis1, newx = ldata.test, type = "response", se.fit = TRUE, level = 0.95)
+  pred = predict(res.basis1, newx = ldata.test, type = "response",
+                 se.fit = TRUE, level = 0.95)
 
 
 
@@ -188,26 +198,28 @@ regress_and_error = function(response, slope, aspect_ow, aspect_ns, genCurvature
 
   # calc error measures
 
-  predobj <- prediction(pred$fit, response.test)
+  predobj = prediction(pred$fit, response.test)
 
-  auroc <- performance(predobj , measure = "auc")@y.values[[1]]
-  rmse <- performance(predobj , measure = "rmse")@y.values[[1]]
-  mmce <- 1 - (sum(diag(text.test))/sum(text.test))
+  auroc = performance(predobj , measure = "auc")@y.values[[1]]
+  rmse = performance(predobj , measure = "rmse")@y.values[[1]]
+  mmce = 1 - (sum(diag(text.test))/sum(text.test))
 
   return(list(auroc, rmse, mmce))
 
 }
 
 
-CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, poi, response, resamp,
-              tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition){
+CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k,
+              poi, response, resamp, tpi, twi, tvec, catchmant_area, formula1,
+              regress_and_error, repetition){
 
 
-  results = foreach (j = 1:repetition, .combine = data.frame, .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
+  results = foreach (j = 1:repetition, .combine = data.frame,
+                     .packages=c('fda.usc', "fda", "ROCR")) %dopar%{
 
 
 
-    #-------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     # create lists to store results of each run k
     auroc_fold = 0
     mmce_fold = 0
@@ -215,10 +227,15 @@ CV = function(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k, po
 
 
     for(i in 1:k){
-      errors = regress_and_error(slope = slope, aspect_ow = aspect_ow, aspect_ns = aspect_ns,
-                                 response = response, genCurvature, twi = twi, tpi = tpi,
-                                 catchmant_area = catchmant_area,i = i, j = j, resamp = resamp, basis.x = basis.x,
-                                 basis.b = basis.b, tvec = tvec, formula1 = formula1)
+      errors = regress_and_error(slope = slope, aspect_ow = aspect_ow,
+                                 aspect_ns = aspect_ns,
+                                 response = response, genCurvature,
+                                 twi = twi, tpi = tpi,
+                                 catchmant_area = catchmant_area,
+                                 i = i, j = j, resamp = resamp,
+                                 basis.x = basis.x,
+                                 basis.b = basis.b, tvec = tvec,
+                                 formula1 = formula1)
       auroc_fold[i] = errors[[1]]
       rmse_fold[i] = errors[[2]]
       mmce_fold[i] = errors[[3]]
@@ -257,9 +274,7 @@ tvec = append(tvec, tvec2)
 rangeval = c(min, num_scenes)
 
 
-#polynomial_order = 4
 
-#basis.x = create.bspline.basis(rangeval, norder = polynomial_order, breaks = knotvec)
 
 basis.b = create.bspline.basis(rangeval, norder = 4, breaks = knotvec_b)
 
@@ -268,7 +283,9 @@ formula1 = response ~ slope + aspect_ns + aspect_ow + twi + tpi + genCurvature +
 
 
 
-resamp_outer = partition_kmeans(poi, nfold = k_outer, repetition = repetition_outer, coords = c("x", "y"), seed1 = 66)
+resamp_outer = partition_kmeans(poi, nfold = k_outer,
+                                repetition = repetition_outer,
+                                coords = c("x", "y"), seed1 = 66)
 
 
 
@@ -289,7 +306,9 @@ nested_outer = for (l in 1:repetition_outer){
   test_outer = poi[resamp_outer[[l]][[m]]$test, ]
 
 
-  resamp_inner = partition_kmeans(train_outer, nfold = k_inner, repetition = repetition_inner, coords = c("x", "y"), seed1 = 999)
+  resamp_inner = partition_kmeans(train_outer, nfold = k_inner,
+                                  repetition = repetition_inner,
+                                  coords = c("x", "y"), seed1 = 999)
 
 
   # number of knots = i
@@ -311,24 +330,30 @@ nested_outer = for (l in 1:repetition_outer){
 
       basis.x = create.bspline.basis(rangeval, norder = po, breaks = knotvec)
 
-      results = CV(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature, k = k_inner, poi, response, resamp = resamp_inner,
-                   tpi, twi, tvec, catchmant_area, formula1, regress_and_error, repetition = repetition_inner)
+      results = CV(basis.x, basis.b, slope, aspect_ns, aspect_ow, genCurvature,
+                   k = k_inner, poi, response, resamp = resamp_inner,
+                   tpi, twi, tvec, catchmant_area, formula1, regress_and_error,
+                   repetition = repetition_inner)
 
 
       # save to data frame
       results = t(results)
       index = seq(1, repetition_inner * 4, by = 4)
-      results = data.frame(auroc = results[index], mmce = results[index + 1], rmse = results[index + 2], sd_auroc = results[index + 3])
+      results = data.frame(auroc = results[index], mmce = results[index + 1],
+                           rmse = results[index + 2],
+                           sd_auroc = results[index + 3])
 
 
-      result_mean = data.frame(auroc = mean(results$auroc), polynomial_order = po,
+      result_mean = data.frame(auroc = mean(results$auroc),
+                               polynomial_order = po,
                                number_knots = nk)
 
       result_mean
 
 
       results_list_all =  rbind(results_list_all, result_mean)
-      result_mean = results_list_all[order(results_list_all$auroc, decreasing = TRUE), ]
+      result_mean = results_list_all[order(results_list_all$auroc,
+                                           decreasing = TRUE), ]
 
 
     }
@@ -344,7 +369,8 @@ nested_outer = for (l in 1:repetition_outer){
 
   knotvec = lseq(from = min, to = num_scenes, length.out = number_knots)
 
-  winning_model = create.bspline.basis(rangeval, norder = poly, breaks = knotvec)
+  winning_model = create.bspline.basis(rangeval, norder = poly,
+                                       breaks = knotvec)
 
   # retrain model
 
@@ -356,8 +382,10 @@ nested_outer = for (l in 1:repetition_outer){
     test_dat
 
 
-    res = regress_and_error(response, slope, aspect_ow, aspect_ns, genCurvature, catchmant_area,
-                                    tpi, twi, resamp = resamp_outer, i = m, j = l, basis.x, basis.b, tvec, formula1)
+    res = regress_and_error(response, slope, aspect_ow, aspect_ns,
+                            genCurvature, catchmant_area,
+                                    tpi, twi, resamp = resamp_outer,
+                            i = m, j = l, basis.x, basis.b, tvec, formula1)
     res
 
     auroc = res[[1]]
@@ -365,7 +393,8 @@ nested_outer = for (l in 1:repetition_outer){
     mmce = res[[3]]
 
 
-    win_outer = data.frame(auroc = auroc, mmce = mmce, rmse = rmse, polynomial_order = poly, number_knots = number_knots)
+    win_outer = data.frame(auroc = auroc, mmce = mmce, rmse = rmse,
+                           polynomial_order = poly, number_knots = number_knots)
 
     win_list = rbind(win_list, win_outer)
 
@@ -374,6 +403,5 @@ nested_outer = for (l in 1:repetition_outer){
 }
 parallel::stopCluster(cl)
 
-# sometimes the results of certain repetitions are the same. This  issue is caused by
-# the kmeans clustering. where the clusters a not different in each run
+
 win_list

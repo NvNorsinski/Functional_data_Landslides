@@ -1,4 +1,5 @@
-# generte point on surface for landslidepolygons
+# author Nils von Norsinski
+# generate points on surface of landslide polygons
 rm(list = ls(all = TRUE))
 library(RQGIS)
 

@@ -1,10 +1,11 @@
-# sample non landslide area from raster
+# author Nils von Norsinski
+# sample non landslide points from raster
+
 rm(list = ls(all = TRUE))
 library(raster)
 library(sf)
 library(sp)
 library(rgeos)
-
 library(dismo)
 
 
@@ -50,11 +51,12 @@ for (i in 1:length(files)){
   fs
   rasStack = stack(fs)
   # create a mask to mask out landslide areas-----------------------------------
-  # It is neccesarry to mask these areas out because in the next step areas of non
-  # landslides should be sampled
-  # only run this section if no mask layer was calculatet before, this step take a while
+  # It is necesary to mask these areas out, because in the next step, areas of
+  # non landslides should be sampled.
+  # Only run this section if no mask layer was calculated before
+  # this step take a while
 
-  # uncomment to create mask
+  # uncomment to create a mask
 
   # dim = dim(rasStack)
   # r = raster(ncol= dim[2], nrow=dim[1])

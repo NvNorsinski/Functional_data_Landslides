@@ -1,3 +1,4 @@
+# Author: Nils von Norsinski
 # generate filtered images with different size of moving window
 rm(list = ls(all = TRUE))
 library(RQGIS)

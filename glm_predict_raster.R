@@ -1,3 +1,6 @@
+# Author: Nils von Norsinski
+# predict landslide pobability map
+
 rm(list = ls(all = TRUE))
 library(raster)
 library(mgcv)
@@ -6,24 +9,24 @@ library(mgcv)
 model = readRDS("Daten/Paldau/Outputs/glm_model.rds")
 
 
-
-
 # file contains original unsmoothed images of all variables
 # e.q. slop, aspect,...
 path_to_images = "Daten/Paldau/nonfunctional/glm/"
 
-fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE, recursive = TRUE)
+fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE,
+                recursive = TRUE)
 fs
 
 rasStack = stack(fs)
 rasStack
 
 
-image = predict(rasStack, model,type = "response", se.fit = TRUE, progress='text')
+image = predict(rasStack, model,type = "response", se.fit = TRUE,
+                progress='text')
 
 
 image
-img
+
 
 # return se???
 # predfun <- function(model, data) {
@@ -52,21 +55,25 @@ plot(img_cat)
 plot(image)
 
 
-#writeRaster(r2$layer.2, "Daten/Paldau/Outputs/prob_map_glm2",  format="GTiff", overwrite=TRUE)
+#writeRaster(r2$layer.2, "Daten/Paldau/Outputs/prob_map_glm2",
+#format="GTiff", overwrite=TRUE)
 
-writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map__categories_glm",  format="GTiff", overwrite=TRUE)
+writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map__categories_glm",
+            format="GTiff", overwrite=TRUE)
 
 image
 
-# raster predict gam-----------------------------------------------------------
+# raster predict gam------------------------------------------------------------
 
 model = readRDS("Daten/Paldau/Outputs/model_gam_r.rds")
 model$model
 path_to_images = "Daten/Paldau/nonfunctional/gam/"
-# variable names are different than in glm model, so renameing images is neccessary
+# variable names are different than in glm model, so renaming images is
+# neccessary
 
 
-fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE, recursive = TRUE)
+fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE,
+                recursive = TRUE)
 fs
 
 rasStack = stack(fs)
@@ -74,7 +81,8 @@ rasStack
 
 
 
-image = predict(rasStack, model,type = "response", se.fit = TRUE, progress='text')
+image = predict(rasStack, model,type = "response", se.fit = TRUE,
+                progress='text')
 
 
 
@@ -93,7 +101,9 @@ plot(img_cat)
 
 plot(image)
 
-writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map_categories_gam",  format="GTiff", overwrite=TRUE)
+writeRaster(img_cat, "Daten/Paldau/Outputs/prob_map_categories_gam",
+            format="GTiff", overwrite=TRUE)
 
-writeRaster(image, "Daten/Paldau/Outputs/prob_map_gam",  format="GTiff", overwrite=TRUE)
+writeRaster(image, "Daten/Paldau/Outputs/prob_map_gam",
+            format="GTiff", overwrite=TRUE)
 

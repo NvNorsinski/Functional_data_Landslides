@@ -1,5 +1,8 @@
+# Author: Nils von Norsinski
 # extract the values from a shape file at position of points
 # and extraxt non landslied values from geology raster file
+
+# not used
 rm(list = ls(all = TRUE))
 library(sf)
 library(raster)

@@ -1,5 +1,6 @@
-# put landslide and non Landslide data in one Dataframe
-# In the final data frame is an numerration from pos:1 to pos:n first postions
+# Author: NIls von Norsinski
+# Put landslide and non Landslide data in one dataframe.
+# In the final data frame is an numeration from pos:1 to pos:n. First postions
 # are all landslide points and then came all non landslide areas.
 rm(list = ls(all = TRUE))
 library(sf)
@@ -20,11 +21,11 @@ no_lsd = c("rnd_no_lsd_Paldau_aspect_ns", "rnd_no_lsd_Paldau_aspect_ow",
 
 
 # read in data
-yes_landsld = readRDS(file = "Daten/Paldau/Samples/filtered_slope_pointVal.rds")
-no_landsld = readRDS(file = "Daten/Paldau/Samples/rnd_no_lsd_Paldau_slope.rds")
+yes_landsld = readRDS("Daten/Paldau/Samples/filtered_slope_pointVal.rds")
+no_landsld = readRDS("Daten/Paldau/Samples/rnd_no_lsd_Paldau_slope.rds")
 
-geology_landsld = readRDS(file = "Daten/Paldau/Samples/geology_pointVal.rds")
-geology_no_landsld = readRDS(file = "Daten/Paldau/Samples/geology_nolsd_pointVal.rds")
+geology_landsld = readRDS("Daten/Paldau/Samples/geology_pointVal.rds")
+geology_no_landsld = readRDS("Daten/Paldau/Samples/geology_nolsd_pointVal.rds")
 
 
 # output path
@@ -65,7 +66,7 @@ formating = function(lsd_data, no_lsd_data){
   lsd_data = renam_rs_lsc(lsd_data, seq_radius)
   lsd_data = t(as.matrix(lsd_data))
 
-  # no Landslide data handling
+  # no landslide data handling
 
   naming_offset = ncol(lsd_data)
   no_lsd_data = no_lsd_data[-1,]
@@ -112,15 +113,12 @@ for(i in 1:length(yes_lsd)){
 
 }
 
-# logathim for catchmant area
+# logarithm for catchmant area
 catchmant_area = readRDS(file = "Daten/Paldau/Samples/catchmantArea.rds")
 catchmant_area_log = log10(catchmant_area)
 saveRDS(catchmant_area_log, "Daten/Paldau/Samples/catchmantArea.rds")
 
-#-------------------------------------------------------------------------------
-# preparation response
-
-
+# preparation response----------------------------------------------------------
 dgm_dat = formating(yes_landsld, no_landsld)
 responset = dgm_dat$responset
 dat = dgm_dat$dat
@@ -146,11 +144,11 @@ saveRDS(geology, geology_path)
 
 # dataframe containing all geographic positions of the points-------------------
 no_lsd_poi = readRDS("Daten/Paldau/Samples/randomPoints.rds")
-yes_landsld_poi = readRDS(file = "Daten/Paldau/Samples/filtered_slope_pointVal.rds")
+yes_landsld_poi = readRDS("Daten/Paldau/Samples/filtered_slope_pointVal.rds")
 
 
 
-yes_landsld_poi <- do.call(rbind, st_geometry(yes_landsld_poi)) %>%
+yes_landsld_poi = do.call(rbind, st_geometry(yes_landsld_poi)) %>%
   as_tibble() %>% setNames(c("x","y"))
 
 dat = rbind(yes_landsld_poi, no_lsd_poi)

@@ -1,3 +1,4 @@
+# Author: Nils von Norsinski
 # extract the values from a raster at position of points
 rm(list = ls(all = TRUE))
 library(raster)
@@ -16,7 +17,7 @@ name = "filtered_aspectow_pointVal"
 path_to_out = "Daten/Paldau/Samples/"
 
 # list of all images in folder
-fs = list.files(path=path_to_images, pattern = "tif$", full.names = TRUE)
+fs = list.files(path = path_to_images, pattern = "tif$", full.names = TRUE)
 fs
 # create raster stack of all filterd images
 rasStack = stack(fs)

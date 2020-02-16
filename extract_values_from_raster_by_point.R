@@ -1,3 +1,4 @@
+# Author: Nils von Norsinski
 # extract the values from a raster at position of points
 rm(list = ls(all = TRUE))
 library(raster)
@@ -71,6 +72,6 @@ for (i in 1:leng) {
 y = combinePointValue$geometry
 
 
-grid_new <- do.call(rbind, st_geometry(y)) %>%
+grid_new = do.call(rbind, st_geometry(y)) %>%
   as_tibble() %>% setNames(c("x","y"))
 saveRDS(grid_new, "Daten/Paldau/Samples/grid_new.rds")
