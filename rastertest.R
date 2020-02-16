@@ -1,4 +1,4 @@
-# This script performs cross validation for funktional regression models
+
 # Author Nils von Norsinski
 rm(list = ls(all = TRUE))
 library(fda)
