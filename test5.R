@@ -3,8 +3,8 @@ library(fda)
 library(fda.usc)
 library(ROCR)
 
-unlink("Daten/output/out.txt")
-unlink("outfile.txt")
+#unlink("Daten/output/out.txt")
+#unlink("outfile.txt")
 
 
 
@@ -66,8 +66,11 @@ rangeval = c(min, num_scenes)
 
 # number of knots = i
 # polynomial order = j
-for (i in 3:3) {
-  for (j in 3:3){
+#for (i in 3:3) {
+#  for (j in 3:3){
+
+i = 4
+j = 4
 
 
     # create basis object
@@ -117,8 +120,8 @@ for (i in 3:3) {
 
 
     # all variables + non functional variable---------------------------------------
-    formula1 = response ~ slope + aspect_ns + aspect_ow + tpi + genCurvature +
-      catchmant_area + twi + geology
+    formula1 = response ~ slope + aspect_ns + aspect_ow + genCurvature +
+      catchmant_area + twi
 
 
     #basis.list = list(dgm.x = dgm_basis, slope.x = slope_basis)
@@ -126,7 +129,7 @@ for (i in 3:3) {
 
     df = cbind(df, geology)
 
-    ldata1 = list(df = df, twi = twifd, slope = slopefd, tpi = tpifd,
+    ldata1 = list(df = df, twi = twifd, slope = slopefd,
                  aspect_ns = aspect_nsfd, aspect_ow = aspect_owfd,
                  genCurvature = genCurvfd,
                  catchmant_area = catchfd)
@@ -136,6 +139,10 @@ for (i in 3:3) {
                             basis.b = basis.b, family = binomial(link = "logit"))
 
     res.basis1
+
+    saveRDS(res.basis1, "Daten/Paldau/Outputs/model.rds")
+
+    res.basis1$beta.l$slope$coefs
 
 
     cat(paste0("-------------------------------------------------Number of knots ",

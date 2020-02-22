@@ -8,12 +8,13 @@ library(raster)
 library(rgdal)
 
 #-------------------------------------------------------------------------------
-prepath = "D:/Master"
+prepath = "C:/Users/Nils-Laptop/Documents/Master/parameters"
 path_to_images = "Parameters/"
 
 
 
-model = readRDS("D:/Outputs/model.rds" )
+model = readRDS("Daten/Paldau/Outputs/model.rds" )
+model
 #-------------------------------------------------------------------------------
 # generate logarithmic sequence
 lseq = function(from, to, length.out) {
@@ -23,8 +24,8 @@ lseq = function(from, to, length.out) {
 num_scenes = 50
 min = 1
 
-number_knots = 6
-polynomial_order = 10
+number_knots = 4
+polynomial_order = 4
 
 
 
@@ -41,13 +42,15 @@ knotvec = lseq(from = min, to = num_scenes, length.out = number_knots)
 
 
 
-basis.x = create.bspline.basis(rangeval, norder = polynomial_order, breaks = knotvec)
-basis.b = create.bspline.basis(rangeval, norder = polynomial_order, breaks = knotvec)
+basis.x = create.bspline.basis(rangeval, norder = polynomial_order,
+                               breaks = knotvec)
+basis.b = create.bspline.basis(rangeval, norder = polynomial_order,
+                               breaks = knotvec)
 
 
 
 
-chunk_size = 350
+chunk_size = 140
 
 resolution = c(8517, 10464)
 
@@ -75,7 +78,8 @@ for (i in 1:length(chunk_x)) {
 chunk_x_idx =c(2, chunk_x_idx)
 chunk_x_idx
 
-fs = list.files(path=prepath, pattern = "tif$", full.names = TRUE, recursive = TRUE)
+fs = list.files(path=prepath, pattern = "tif$", full.names = TRUE,
+                recursive = TRUE)
 fs
 
 
@@ -95,8 +99,14 @@ for (k in 1:length(chunk_x_idx)) {
   dat = as.data.frame(dat)
 
 
-  dat = split.default(dat, rep(1:7, each = 22) )
-  names = c("aspect_ns", "aspect_ow", "catchmant_area", "genCurvature", "slope", "tpi", "twi")
+  dat = split.default(dat, rep(1:6, each = 22))
+  temp =  dat[[3]]
+  temp = log10(temp[,])
+  dat[[3]] = temp
+  rm(temp)
+
+  names = c("aspect_ns", "aspect_ow", "catchmant_area", "genCurvature",
+            "slope", "twi")
   names(dat) = names
 
   data = list()
@@ -117,12 +127,14 @@ for (k in 1:length(chunk_x_idx)) {
 
 
 
-  data = list(aspect_ns = data[[1]], aspect_ow = data[[2]], catchmant_area = data[[3]], genCurvature = data[[4]],
-               slope = data[[5]], tpi = data[[6]], twi = data[[7]])
+  data = list(aspect_ns = data[[1]], aspect_ow = data[[2]],
+              catchmant_area = data[[3]], genCurvature = data[[4]],
+               slope = data[[5]], twi = data[[6]])
 
 
 
-  pred = predict(model, newx = data, type = "response", se.fit = TRUE, level = 0.95)
+  pred = predict(model, newx = data, type = "response", se.fit = TRUE,
+                 level = 0.95)
 
 
 
@@ -130,7 +142,7 @@ for (k in 1:length(chunk_x_idx)) {
   pred = as.data.frame(pred)
 
 
-  saveRDS(pred, paste0("D:/Master/pred_image",100+k,".rds"))
+  saveRDS(pred, paste0("Daten/Paldau/imagecor/", 100+k, ".rds"))
   rm(data)
 
 

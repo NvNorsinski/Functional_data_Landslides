@@ -6,7 +6,7 @@ library(rgdal)
 
 
 
-path = "Daten/Paldau/cutout/"
+path = "Daten/Paldau/imagecor/"
 source_img = raster("Daten/Paldau/Outputs/prob_map_glm.tif")
 source_img
 
@@ -19,7 +19,7 @@ files
 
 # dimensions of image and chunks
 x = 10464
-y = 300
+y = 140
 
 dimension = c(x, y)
 image_comp = 0
@@ -57,7 +57,8 @@ extent(r) = ext
 crs(r) = crs
 
 plot(r)
-writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_cut",
+
+writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre_glm_cor",
             format="GTiff", overwrite=TRUE)
 #create error map---------------------------------------------------------------
 image_comp_err = 0
@@ -87,5 +88,5 @@ crs(r) = crs
 plot(r)
 r
 
-writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_error_cut",
+writeRaster(r, "Daten/Paldau/Outputs/prob_map_fregre.glm_error_cor",
             format="GTiff", overwrite=TRUE)
