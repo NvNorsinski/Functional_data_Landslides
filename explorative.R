@@ -1,8 +1,9 @@
 rm(list = ls(all = TRUE))
 library(ggplot2)
 library(reshape)
-library(cowplot)
 library(ggpubr)
+library(corrplot)
+library(ggcorrplot)
 # read data
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
 
@@ -16,12 +17,7 @@ catchmant_area = readRDS(file = "Daten/Paldau/Samples/catchmantArea.rds")
 
 twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
 
-adju = 0.5
-
-plot(density(slope[1,], adjust = adju), ylim = c(1,4), xlab = "Slope [degree]")
-lines (density(slope[10,], adjust = adju))
-lines (density(slope[20,], adjust = adju))
-
+# density-----------------------------------------------------------------------
 
 dat = as.data.frame(slope[c(1,10,20),])
 dat = t(dat)
@@ -71,11 +67,12 @@ p1 = ggplot(long, aes(x = value, colour = X2)) +
   theme(plot.title = element_text(hjust = 0.5))+
   theme(legend.position="none")+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+
   theme(axis.text=element_text(size=12),
        axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
-  theme(axis.text.x = element_text(size = 12))
+  theme(axis.text.x = element_text(size = 12))+
+  geom_hline(yintercept=0, colour="grey", size=1)
 
 p1
 
@@ -93,7 +90,7 @@ p2 = ggplot(as_ns, aes(x = value, colour = X2)) +
   theme(plot.title = element_text(hjust = 0.5))+
   theme(legend.position="none")+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+  geom_hline(yintercept=0, colour="grey", size=1)+
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
@@ -118,7 +115,7 @@ p3 = ggplot(as_ow, aes(x = value, colour = X2)) +
   theme(plot.title = element_text(hjust = 0.5))+
   theme(legend.position="none")+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+  geom_hline(yintercept=0, colour="grey", size=1)+
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
@@ -141,7 +138,7 @@ p4 = ggplot(genCurv, aes(x = value, colour = X2)) +
   theme(plot.title = element_text(hjust = 0.5))+
   theme(legend.position="none")+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+  geom_hline(yintercept=0, colour="grey", size=1)+
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
@@ -165,7 +162,7 @@ p5 = ggplot(catch, aes(x = value, colour = X2)) +
   theme(plot.title = element_text(hjust = 0.5))+
   theme(legend.position="none")+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+  geom_hline(yintercept=0, colour="grey", size=1)+
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
@@ -189,7 +186,7 @@ p6 = ggplot(tw, aes(x = value, colour = X2)) +
   theme(legend.position="none")+
   theme(plot.title = element_text(hjust = 0.5))+
   scale_color_manual(values=c("blue", "green", "red"))+
-  geom_hline(yintercept=0, colour="grey", size=0.01)+
+  geom_hline(yintercept=0, colour="grey", size=1)+
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14))+
   theme(axis.text.y = element_text(size = 12))+
@@ -199,11 +196,78 @@ p6 = ggplot(tw, aes(x = value, colour = X2)) +
 p6
 
 
-#plot_grid(p1, p2, p3, p4, p5, p6, labels = "AUTO")
 
-img = ggarrange(p1, p2, p3, p4, p5, p6, ncol=2, nrow=3, common.legend = TRUE, legend="bottom")
+img = ggarrange(p1, p2, p3, p4, p5, p6, ncol=2, nrow=3, common.legend = TRUE,
+                legend="bottom")
 
 img
 
-ggsave("density2.png", plot = img, device = "png", dpi = 300, height =25, units = "cm")
+ggsave("density2.png", plot = img, device = "png", dpi = 300, height =25,
+       units = "cm", type = "cairo-png")
+
+# correltation matrix-----------------------------------------------------------
+# correlation at 1 meter
+
+dat = as.data.frame(slope[c(1,10,20),])
+dat = t(dat)
+dat = as.data.frame(dat)
+
+as_ns = as.data.frame(aspect_ns[c(1,10,20),])
+as_ns = t(as_ns)
+as_ns = as.data.frame(as_ns)
+
+as_ow = as.data.frame(aspect_ow[c(1,10,20),])
+as_ow = t(as_ow)
+as_ow = as.data.frame(as_ow)
+
+genCurv = as.data.frame(genCurvature[c(1,10,20),])
+genCurv = t(genCurv)
+genCurv = as.data.frame(genCurv)
+
+catch = as.data.frame(catchmant_area[c(1,10,20),])
+catch = t(catch)
+catch = as.data.frame(catch)
+
+# size in m
+tw = as.data.frame(twi[c(1,10,20),])
+tw = t(tw)
+tw = as.data.frame(tw)
+
+
+# number of the colum
+meters = 3
+
+
+
+# change !!!!! according to meters
+dats = as.data.frame(dat$`40`)
+dd = cbind(dats, as_ns[,meters], as_ow[,meters], genCurv[,meters], catch[,meters], tw[,meters])
+names(dd) = c("Slope", "Aspect ns", "Aspect ow", "GC", "Catch", "TWI")
+
+
+
+corm = cor(dd, method = "spearman")
+
+
+png("corpl40.png", type="cairo", width = 1000, height = 1000, units = "px" )
+corrplot(corm, type = "upper", order = "original",
+         tl.col = "black", tl.srt = 90, tl.cex = 2, cl.cex = 2)
+
+
+dev.off()
+
+corrplot(corm, type = "upper", order = "original",
+         tl.col = "black", tl.srt = 90)
+
+
+
+
+#dm = melt(corm)
+
+#corp = ggcorrplot(corm,  method  = "circle", outline.col = "white", hc.order = TRUE, type = "lower", lab = TRUE)
+#corp
+
+
+#ggsave("corpl.png", plot = corp, device = "png", dpi = 300, height =25,
+#       units = "cm", type = "cairo-png")
 
