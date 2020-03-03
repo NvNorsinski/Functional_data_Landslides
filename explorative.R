@@ -4,6 +4,7 @@ library(reshape)
 library(ggpubr)
 library(corrplot)
 library(ggcorrplot)
+
 # read data
 response = readRDS(file = "Daten/Paldau/Samples/response.rds")
 
@@ -59,7 +60,7 @@ p1 = ggplot(long, aes(x = value, colour = X2)) +
   labs(color = "radius of moving window [m]: ")+
   xlim(0, 1)+
   ylim(0, 4)+
-  xlab("Slope [Degree]") +
+  xlab("Slope [degree]") +
  # labs(title="Slope")+
   #theme(legend.position="bottom")+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 4))+
@@ -83,7 +84,7 @@ p2 = ggplot(as_ns, aes(x = value, colour = X2)) +
   labs(color = "radius moving window [m]")+
   xlim(-1, 1)+
   ylim(0, 4)+
-  xlab("Aspect NS [radiant]") +
+  xlab("Aspect NS [degree]") +
   #labs(title="Slope")+
   #theme(legend.position="bottom")+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 3))+
@@ -108,7 +109,7 @@ p3 = ggplot(as_ow, aes(x = value, colour = X2)) +
   labs(color = "radius moving window [m]")+
   xlim(-1, 1)+
   ylim(0, 4)+
-  xlab("Aspect EW [radiant]") +
+  xlab("Aspect EW [degree]") +
   #labs(title="Slope")+
   #theme(legend.position="bottom")+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 3))+
@@ -131,7 +132,7 @@ p4 = ggplot(genCurv, aes(x = value, colour = X2)) +
   labs(color = "radius moving window [m]")+
   xlim(-1, 1)+
   ylim(0, 4)+
-  xlab("General Curvature [radiant]") +
+  xlab("General Curvature [degree]") +
   #labs(title="Slope")+
   #theme(legend.position="bottom")+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 4))+
@@ -155,7 +156,7 @@ p5 = ggplot(catch, aes(x = value, colour = X2)) +
   labs(color = "radius moving window [m]")+
   xlim(-0.1, 5.4)+
   ylim(0, 2)+
-  xlab("Catchmant Area") +
+  xlab("Catchmant Area (log)") +
   #labs(title="Catchmant Area")+
   #theme(legend.position="bottom")+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 2))+
@@ -199,7 +200,7 @@ p6
 
 
 img = ggarrange(p1, p2, p3, p4, p5, p6, ncol=2, nrow=3, common.legend = TRUE,
-                legend="bottom")
+                legend="bottom", labels = "AUTO")
 
 img
 
@@ -235,7 +236,7 @@ tw = t(tw)
 tw = as.data.frame(tw)
 
 
-# number of the colum
+# number of the colum!!!
 meters = 3
 
 
@@ -243,7 +244,7 @@ meters = 3
 # change !!!!! according to meters
 dats = as.data.frame(dat$`40`)
 dd = cbind(dats, as_ns[,meters], as_ow[,meters], genCurv[,meters], catch[,meters], tw[,meters])
-names(dd) = c("Slope", "Aspect ns", "Aspect ow", "GC", "Catch", "TWI")
+names(dd) = c("Slope", "Aspect ns", "Aspect ew", "GC", "Catch", "TWI")
 
 
 
@@ -251,14 +252,14 @@ corm = cor(dd, method = "spearman")
 
 
 png("corpl40.png", type="cairo", width = 1000, height = 1000, units = "px" )
+
 corrplot(corm, type = "upper", order = "original",
-         tl.col = "black", tl.srt = 90, tl.cex = 2, cl.cex = 2)
+         tl.col = "black", tl.srt = 90, tl.cex = 2.2, cl.cex = 2.5)
 
 
 dev.off()
 
-corrplot(corm, type = "upper", order = "original",
-         tl.col = "black", tl.srt = 90)
+
 
 
 
@@ -271,4 +272,36 @@ corrplot(corm, type = "upper", order = "original",
 
 #ggsave("corpl.png", plot = corp, device = "png", dpi = 300, height =25,
 #       units = "cm", type = "cairo-png")
+
+# streu diagramm----------------------------------------------------------------
+glm = readRDS("Daten/Paldau/Pred_glm.rds")
+plot(glm)
+
+fglm = readRDS("Daten/Paldau/predfglm.rds")
+plot(fglm)
+
+dat = cbind(glm, fglm)
+dat = as.data.frame(dat)
+
+plot(glm, fglm)
+
+
+p = ggplot(dat, aes(x=glm, y=fglm))+
+  geom_point()+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))+
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1))+
+  geom_smooth()+
+  theme_minimal()+
+  xlab("GLM")+
+  ylab("FGLM")+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=12))+
+  theme(axis.text.y = element_text(size = 10))+
+  theme(axis.text.x = element_text(size = 10))
+
+p
+
+ggsave("scatter.png", plot = p, device = "png", dpi = 300, height =10,
+       units = "cm", type = "cairo-png")
+
 

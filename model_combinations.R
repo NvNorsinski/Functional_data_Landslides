@@ -7,8 +7,8 @@ library(fda)
 library(fda.usc)
 library(ROCR)
 
-unlink("Daten/output/out.txt")
-unlink("outfile.txt")
+#unlink("Daten/output/out.txt")
+#unlink("outfile.txt")
 
 
 
@@ -36,7 +36,6 @@ list_dat = list(slope, dgm, aspect_ns, aspect_ow, genCurvature, catchmant_area, 
 list_nam = c("slope", "dgm", "aspect_ns", "aspect_ow", "genCurvature", "catchmant_area", "tpi", "twi")
 leng_list = length(list_dat)
 
-out_pca = "out_pca.txt"
 
 
 respons = as.factor(response)
@@ -69,8 +68,9 @@ rangeval = c(min, num_scenes)
 
 # number of knots = i
 # polynomial order = j
-for (i in 3:3) {
-  for (j in 3:3){
+for (i in 3:10) {
+  for (j in 3:10){
+
 
 
     # create basis object
@@ -112,7 +112,7 @@ for (i in 3:3) {
     genCurvfd = fdata(genCurv_basis$fd)
 
     catchfd = fdata(catch_basis$fd)
-    tpifd = fdata(tpi_basis$fd)
+
     twifd = fdata(twi_basis$fd)
 
     list_fd = list(slope_basis, dgm_basis, asp_ns_basis, asp_ow_basis,
@@ -121,8 +121,8 @@ for (i in 3:3) {
 
 
     # all variables + non functional variable-----------------------------------
-    formula1 = response ~ slope + aspect_ns + aspect_ow + tpi + genCurvature +
-      catchmant_area + twi + geology
+    formula1 = response ~ slope + aspect_ns + aspect_ow + genCurvature +
+      catchmant_area + twi
 
 
     #basis.list = list(dgm.x = dgm_basis, slope.x = slope_basis)
@@ -130,7 +130,7 @@ for (i in 3:3) {
 
     df = cbind(df, geology)
 
-    ldata1 = list(df = df, twi = twifd, slope = slopefd, tpi = tpifd,
+    ldata1 = list(df = df, twi = twifd, slope = slopefd,
                  aspect_ns = aspect_nsfd, aspect_ow = aspect_owfd,
                  genCurvature = genCurvfd,
                  catchmant_area = catchfd)
@@ -194,11 +194,12 @@ for (i in 3:3) {
 
 
     name = paste0("Daten/images/summary", i, j, ".png")
-    png(filename=name, width = 900, height = 900)
+    png(filename=name, width = 750, height = 750, type="cairo")
 
-    par(mfrow=c(2,2), oma = c(0, 0, 2, 0))
+    par(mfrow=c(2,2), oma = c(0, 1, 2, 0))
 
-    plot(res.basis1)
+    plot(res.basis1, cex.axis = 1.5 ,cex.lab = 1.5, lwd = 2, cex.sub = 2)
+
     mtext(paste0("Nr. knots: ", i, " ", "Polynomial Order: ", j),
           outer = TRUE, cex = 1, line = 1)
 
@@ -213,47 +214,42 @@ for (i in 3:3) {
     res.basis1$beta.l$slope$coefs
 
     name = paste0("Daten/images/regress",i,j,".png")
-    png(filename=name, width = 900, height = 900)
-    par(mfrow=c(2,4))
+    png(filename=name, width = 900, height = 900, type="cairo")
+    par(mfrow=c(2,3), mar = c(5,7,4,2) + 0.1)
     plot(res.basis1$beta.l$slope,
-         main = paste0("slope ","n. knots",i,"p. order", j),
-         xlab = "size moving window [m]", ylab = "beta [Grad]" , yaxt="n",
-         xaxt="n", cex.lab = 2)
+         main = paste0("Slope"),
+         xlab = "size moving window [m]", ylab = "β [degree]" , yaxt="n",
+         xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
 
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 
-    plot(res.basis1$beta.l$twi, main = "twi", xlab = "size moving window [m]",
-         ylab = "beta", yaxt="n", xaxt="n", cex.lab = 2)
+    plot(res.basis1$beta.l$twi, main = "TWI", xlab = "size moving window [m]",
+         ylab = "β [TWI]", yaxt="n", xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 
-    plot(res.basis1$beta.l$tpi, main = "tpi", xlab = "size moving window [m]",
-         ylab = "beta [m]", yaxt="n", xaxt="n", cex.lab = 2)
-    axis(2,cex.axis=2)
-    axis(1,cex.axis=2)
-
-    plot(res.basis1$beta.l$catchmant_area, main = "Catchmant area",
+    plot(res.basis1$beta.l$catchmant_area, main = "Catchmant Area",
          xlab = "size moving window [m]",
-         ylab = "beta (log)", yaxt="n", xaxt="n", cex.lab = 2)
+         ylab = "β Catchment Area (log)", yaxt="n", xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 
-    plot(res.basis1$beta.l$aspect_ns, main = "aspect ns",
-         xlab = "size moving window [m]", ylab = "beta [rad]",
-         yaxt="n", xaxt="n", cex.lab = 2)
+    plot(res.basis1$beta.l$aspect_ns, main = "Aspect ns",
+         xlab = "size moving window [m]", ylab = "β [degree]",
+         yaxt="n", xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 
-    plot(res.basis1$beta.l$aspect_ow, main = "aspect ew",
-         xlab = "size moving window [m]", ylab = "beta [rad]",
-         yaxt="n", xaxt="n", cex.lab = 2)
+    plot(res.basis1$beta.l$aspect_ow, main = "Aspect ew",
+         xlab = "size moving window [m]", ylab = "β [degree]",
+         yaxt="n", xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 
-    plot(res.basis1$beta.l$genCurvature, main = "general Curvature",
-         xlab = "size moving window [m]", ylab = "beta [rad]",
-         yaxt="n", xaxt="n", cex.lab = 2)
+    plot(res.basis1$beta.l$genCurvature, main = "General Curvature",
+         xlab = "size moving window [m]", ylab = "β [degree]",
+         yaxt="n", xaxt="n", cex.lab = 2, cex.main = 2, lwd = 2)
     axis(2,cex.axis=2)
     axis(1,cex.axis=2)
 

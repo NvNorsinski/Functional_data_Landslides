@@ -17,8 +17,9 @@ twi = readRDS(file = "Daten/Paldau/Samples/twi.rds")
 
 
 model = readRDS("Daten/Paldau/Outputs/model.rds")
-img = raster("Daten/Paldau/Outputs/prob_map_fregre_glm_cor.tif")
-
+modelglm = readRDS("Daten/Paldau/Outputs/glm_model.rds")
+imgfunc = raster("Daten/Paldau/Outputs/prob_map_fregre_glm_cor.tif")
+imgn = raster("Daten/Paldau/Outputs/glm.tif")
 #-------------------------------------------------------------------------------
 
 
@@ -106,9 +107,26 @@ ldata1 = list(df = df, twi = twifd, slope = slopefd,
 pred = predict(model, newx = ldata1, type = "response",
                se.fit = TRUE, level = 0.95)
 pred
+
+model$fitted.values
+
+predm = as.vector(model$fitted.values)
+predm
+pred = as.vector(pred$fit)
+pred
+
+plot(predm, pred)
+
+model$linear.predictors
+
+boxplot(pred$fit)
 pred = as.data.frame(pred)
 pr_ft = pred$fit
 hist(pr_ft)
+
+
+
+
 #hist(img)
 
 ggplot(pred) +
@@ -122,26 +140,37 @@ ggplot(pred) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 2))+
   theme_minimal()
 
-imgr = as.data.frame(img)
+imgdatfunc = as.data.frame(imgfunc)
+imgdatn = as.data.frame(imgn)
 
-names(imgr) = "values"
+imgdatn$values
 
+names(imgdatfunc) = "values"
+names(imgdatn) = "values"
 
+predfglm = readRDS("Daten/Paldau/predfglm.rds")
+predfglm
+predglm = readRDS("Daten/Paldau/Pred_glm.rds")
+par(mar=c(5.1, 5.1, 5.1, 8.1), xpd=TRUE)
 
-#par(mar=c(5.1, 5.1, 5.1, 8.1), xpd=TRUE)
-
-#png("density_pred.png", type="cairo", width = 800, height = 400, units = "px" )
-
-plot(density(imgr$values, bw = 0.005, cut = c(0,1)),col = "red",lwd = 2, main = "",
-     zero.line = FALSE, xlab = "Predictions", ylim = c(0,25),yaxs="i", xaxs="i")
-lines(density(pred$fit, bw = 0.005), col = "blue", lwd = 2)
-
-#legend("topright", inset=c(-0.4,0), legend=c("Map Prediction","Training Prediction"),
-#       col=c("red", "blue"), lty=1, cex=1)
+png("density_pred_legend.png", type="cairo", width = 800, height = 400, units = "px" )
 
 
-#dev.off()
+plot(density(imgdatfunc$values, bw = 0.005, cut = c(0,1)),col = "red",lwd = 2, main = "",
+     zero.line = FALSE, xlab = "Predictions", ylim = c(0,25),yaxs="i", xaxs="i", cex.axis = 1.5, cex.lab = 1.5)
+lines(density(model$fitted.values, bw = 0.005), col = "blue", lwd = 2)
+lines(density(modelglm$fitted.values, bw = 0.005), col = "green", lwd = 2)
 
+#legend("topright", inset=c(-0.4,0), legend=c("Map Prediction","Training Prediction FGLM", "Training Prediction GLM"),
+#       col=c("red", "blue", "green" ), lty=1, cex=1)
+
+
+dev.off()
+
+aa = as.data.frame(model$fitted.values)
+bb = as.data.frame(modelglm$fitted.values)
+plot(model$fitted.values)
+plot(modelglm$fitted.values)
 #plot(density(imgr$values, bw = 0.005), main = "Image Data", xlab = "Predictions")
 #rug(jitter(pred$fit))
 
